@@ -43,6 +43,9 @@ let gameState = {
     }
 };
 
+// Dados da questão dinâmica atualmente exibida
+let currentQuestionData = null;
+
 const DOM = {
     slideContent: document.getElementById('slide-content'),
     imageContainer: document.getElementById('slide-image-container'),
