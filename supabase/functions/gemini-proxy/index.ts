@@ -1,4 +1,4 @@
-// supabase/functions/gemini-proxy/index.ts
+// supabase/functions/gemini-proxy/index.ts --- CÓDIGO DE TESTE SIMPLIFICADO
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
@@ -7,48 +7,32 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+console.log("FUNÇÃO DE TESTE 'DUMMY' INICIADA. Versão: 1.0");
+
 serve(async (req) => {
+  // Responde ao pre-flight do CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const apiKey = Deno.env.get('GOOGLE_API_KEY');
-    if (!apiKey) {
-      throw new Error("Chave da API do Google não foi encontrada no servidor.");
-    }
-    
-    // CORREÇÃO: Usando o modelo mais recente e estável da Google
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+    // Apenas para garantir que o corpo do pedido pode ser lido
+    const body = await req.json();
+    console.log("Corpo do pedido recebido com sucesso:", body);
 
-    const originalPayload = await req.json();
-
-    // Adiciona a configuração para forçar a saída em JSON
-    const modifiedPayload = {
-      ...originalPayload,
-      generationConfig: {
-        response_mime_type: "application/json",
-      }
+    // Devolve uma resposta de sucesso FIXA, sem contactar o Google.
+    const successResponse = {
+      message: "Teste bem-sucedido! A função aceitou o método POST.",
+      testData: true
     };
 
-    const geminiResponse = await fetch(apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(modifiedPayload),
-    });
-
-    const responseText = await geminiResponse.text();
-
-    if (!geminiResponse.ok) {
-      throw new Error(`Erro na API do Google: ${responseText}`);
-    }
-
-    return new Response(responseText, {
+    return new Response(JSON.stringify(successResponse), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
+      status: 200, // Retorna 200 OK
     });
 
   } catch (error) {
+    // Se houver algum erro, devolve-o
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
