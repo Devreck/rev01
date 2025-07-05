@@ -201,7 +201,7 @@ async function generateDynamicQuestion(slide, difficulty = 'standard') {
 
     const finalPrompt = basePrompt + " " + difficultyInstruction + " **REGRA FINAL: Retorne APENAS um objeto JSON válido, sem nenhum texto ou formatação adicional fora do JSON.**";
 
-    const apiUrl = '[https://bsajzksjhpositpoflpr.supabase.co/functions/v1/gemini-proxy](https://bsajzksjhpositpoflpr.supabase.co/functions/v1/gemini-proxy)'; 
+    const apiUrl = 'https://bsajzksjhpositpoflpr.supabase.co/functions/v1/gemini-proxy';
     
     const payload = { 
         contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
