@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Missão: S.O.S. Aurora - Uma Aventura de Física</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Slab:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <!-- MathJax para renderização de equações matemáticas -->
+    <script>
+        MathJax = {
+          tex: {
+            inlineMath: [['$', '$'], ['\\(', '\\)']],
+            displayMath: [['$$', '$$'], ['\\[', '\\]']]
+          },
+          svg: {
+            fontCache: 'global'
+          }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#0c0a1e] text-gray-200 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Container Principal do Jogo -->
+    <div id="game-container" class="w-full max-w-4xl bg-[#1a1a2e] rounded-lg p-6 md:p-8 relative">
+        
+        <!-- Display de Pontuação e Botão de Reset -->
+        <div id="score-display" class="absolute top-4 left-4 font-orbitron text-lg text-cyan-300">PONTUAÇÃO: 0</div>
+        <div class="absolute top-4 right-4">
+            <button id="reset-btn" class="action-button bg-gray-700 hover:bg-gray-600 text-white border-gray-900 font-bold py-2 px-4 rounded-md" title="Reiniciar a missão do zero. Todo o progresso e pontuação serão perdidos.">Reiniciar Missão</button>
+        </div>
+
+        <!-- Conteúdo Dinâmico do Slide -->
+        <div id="slide-content" class="slide-content mt-12">
+            <div id="slide-image-container" class="mb-4"></div>
+            <div id="slide-text-container"></div>
+            <div id="slide-choices-container" class="mt-6 space-y-3"></div>
+            <div id="gemini-output-container" class="mt-4"></div>
+        </div>
+    </div>
+
+    <!-- Modal para Confirmação do Protocolo E.N.E.M. -->
+    <div id="enem-modal" class="modal-overlay hidden">
+        <div class="modal-content p-8 rounded-lg max-w-lg text-center">
+            <h3 class="font-orbitron text-2xl text-yellow-400 mb-4">E.N.E.M (Enciclopédia de Navegação e Engenharia da Missão)</h3>
+            <p class="text-gray-300 mb-6">Atenção: Acessar a E.N.E.M. projeta o terminal holográfico da Enciclopédia de Navegação e Engenharia da Missão, liberando desafios de treinamento interplanetário específicos dos sistemas que você está analisando, deseja continuar?</p>
+            <div class="flex justify-center space-x-4">
+                <button id="enem-confirm-btn" class="action-button bg-blue-600 hover:bg-blue-500 text-white border-blue-800 px-8 py-2" title="Confirmar e acessar os desafios E.N.E.M.">Sim</button>
+                <button id="enem-cancel-btn" class="action-button bg-red-600 hover:bg-red-500 text-white border-red-800 px-8 py-2" title="Cancelar e retornar ao diagnóstico atual.">Não</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Exibição de Vídeos -->
+    <div id="video-modal" class="modal-overlay hidden">
+        <div class="modal-content p-6 rounded-lg max-w-4xl w-full">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-orbitron text-2xl text-red-400">Banco de Imagens Primitivas</h3>
+                <button id="video-close-btn" class="text-gray-400 hover:text-white" title="Fechar o banco de imagens.">&times;</button>
+            </div>
+            <div id="video-grid" class="space-y-6"></div>
+        </div>
+    </div>
+
+    <!-- Custom Script -->
+    <script src="script.js"></script>
+</body>
+</html>
