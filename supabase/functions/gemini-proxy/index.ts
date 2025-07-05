@@ -14,16 +14,18 @@ serve(async (req) => {
   }
 
   try {
-    // Pega a chave da API guardada de forma segura no Supabase
     const apiKey = Deno.env.get('GOOGLE_API_KEY');
     if (!apiKey) {
+      console.error("ERRO CRÍTICO: Segredo 'GOOGLE_API_KEY' não encontrado no Supabase.");
       throw new Error("Chave da API do Google não encontrada.");
     }
 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
 
-    // Pega o corpo da requisição enviada pelo seu script.js
     const requestBody = await req.json();
+
+    // LOG 1: Mostrar exatamente o que estamos a enviar para o Gemini
+    console.log("==> ENVIANDO PARA O GEMINI:", JSON.stringify(requestBody, null, 2));
 
     const geminiResponse = await fetch(apiUrl, {
       method: 'POST',
@@ -31,12 +33,17 @@ serve(async (req) => {
       body: JSON.stringify(requestBody),
     });
 
+    const responseText = await geminiResponse.text();
+
+    // LOG 2: Mostrar a resposta bruta que o Gemini nos devolveu
+    console.log("<== RESPOSTA BRUTA DO GEMINI:", responseText);
+
     if (!geminiResponse.ok) {
-      const errorText = await geminiResponse.text();
-      throw new Error(`Erro na API do Google: ${errorText}`);
+      console.error("A API do Google retornou um erro:", responseText);
+      throw new Error(`Erro na API do Google: ${responseText}`);
     }
 
-    const data = await geminiResponse.json();
+    const data = JSON.parse(responseText);
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -44,6 +51,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
+    console.error("ERRO NA FUNÇÃO PROXY:", error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
