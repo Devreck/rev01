@@ -452,8 +452,3 @@ async function showVideoModal(slide) {
 DOM.videoCloseBtn.onclick = () => {
     DOM.videoModal.classList.add('hidden');
 };
-
-window.onload = () => {
-    setupEventListeners();
-    renderSlide(currentSlideId);
-};
