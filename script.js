@@ -100,18 +100,24 @@ function shuffleArray(array) {
     }
 }
 
+/**
+ * @description Extrai de forma robusta um payload JSON de uma string de texto, 
+ * mesmo que esteja dentro de um bloco de código Markdown.
+ */
 function extractJsonPayload(text) {
     if (!text) return '';
+    // Tenta encontrar um bloco de código JSON cercado por ```
     const fenced = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
     if (fenced) {
         return fenced[1];
     }
+    // Se não encontrar, procura pelo primeiro '{' e o último '}'
     const first = text.indexOf('{');
     const last = text.lastIndexOf('}');
     if (first !== -1 && last !== -1 && last > first) {
         return text.slice(first, last + 1);
     }
-    return text;
+    return text; // Retorna o texto original como última tentativa
 }
 
 function createButton(text, onClick, className, disabled = false, tooltip = '') {
@@ -133,18 +139,21 @@ async function callGeminiApi(prompt, button) {
     button.disabled = true;
     button.innerHTML = '<div class="flex items-center justify-center"><div class="loader"></div><span>Processando...</span></div>';
 
-    const apiUrl = 'https://bsajzksjhpositpoflpr.supabase.co/functions/v1/gemini-proxy'; 
+    const apiUrl = '[https://bsajzksjhpositpoflpr.supabase.co/functions/v1/gemini-proxy](https://bsajzksjhpositpoflpr.supabase.co/functions/v1/gemini-proxy)'; 
     
     const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
 
     try {
         const response = await fetch(apiUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            // AJUSTE: Garantir que o cabeçalho Content-Type está definido
+            headers: { 
+                'Content-Type': 'application/json' 
+            },
             body: JSON.stringify(payload)
         });
 
-        if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+        if (!response.ok) throw new Error(`API Error: ${response.status} ${response.statusText}`);
 
         const result = await response.json();
         
@@ -192,7 +201,7 @@ async function generateDynamicQuestion(slide, difficulty = 'standard') {
 
     const finalPrompt = basePrompt + " " + difficultyInstruction + " **REGRA FINAL: Retorne APENAS um objeto JSON válido, sem nenhum texto ou formatação adicional fora do JSON.**";
 
-    const apiUrl = 'https://bsajzksjhpositpoflpr.supabase.co/functions/v1/gemini-proxy'; 
+    const apiUrl = '[https://bsajzksjhpositpoflpr.supabase.co/functions/v1/gemini-proxy](https://bsajzksjhpositpoflpr.supabase.co/functions/v1/gemini-proxy)'; 
     
     const payload = { 
         contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
@@ -201,7 +210,10 @@ async function generateDynamicQuestion(slide, difficulty = 'standard') {
     try {
         const response = await fetch(apiUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            // AJUSTE: Garantir que o cabeçalho Content-Type está definido
+            headers: { 
+                'Content-Type': 'application/json' 
+            },
             body: JSON.stringify(payload)
         });
         if (!response.ok) {
@@ -213,6 +225,7 @@ async function generateDynamicQuestion(slide, difficulty = 'standard') {
         let jsonString = result.candidates?.[0]?.content?.parts?.[0]?.text;
         if (!jsonString) throw new Error('No text in API response');
 
+        // AJUSTE: Usar a função robusta para extrair o JSON
         jsonString = extractJsonPayload(jsonString);
 
         const parsedData = JSON.parse(jsonString);
@@ -412,7 +425,7 @@ function handleAnswer(answer, slide) {
         feedbackEl.innerHTML = `<strong class='font-orbitron text-red-300'>FALHA NA CALIBRAÇÃO:</strong> ${slide.incorrectFeedback}`;
         feedbackClass = 'feedback-incorrect';
 
-        const easierBtn = createButton('Tentar com simulação mais fácil', () => renderSlide(currentSlideId, 'easier'), 'justify-center bg-red-600 hover:bg-red-500 text-white border-red-800', false, 'Gera uma nova versão do desafio com complexidade reduzida.');
+        const easierBtn = createButton('Tentar com simulação mais fácil', () => renderSlide(gameState.currentSlideId, 'easier'), 'justify-center bg-red-600 hover:bg-red-500 text-white border-red-800', false, 'Gera uma nova versão do desafio com complexidade reduzida.');
         const commanderPrompt = `Você é a Comandante Eva Rostova, orientando o cadete. Para o problema atual, descreva a estratégia de resolução de forma direta e eficiente. Apresente as etapas lógicas e as fórmulas necessárias em sua forma geral, **sem substituir os valores numéricos**. **Toda fórmula deve estar em modo de exibição ($$fórmula$$) e centralizada. Variáveis individuais no texto devem usar o modo inline ($símbolo$).** O objetivo é guiar o raciocínio, não dar a resposta. Questão: "${slide.question || 'descrita na imagem'}"`;
         const commanderButton = createButton('Verificar com o comandante', (e) => callGeminiApi(commanderPrompt, e.currentTarget), 'gemini-button justify-center bg-teal-600 hover:bg-teal-500 text-white border-teal-800', false, 'Recebe uma orientação estratégica da Comandante, com as fórmulas e o passo a passo para a resolução.');
         feedbackActions.append(easierBtn, commanderButton);
@@ -431,7 +444,7 @@ function handleAnswer(answer, slide) {
         MathJax.typesetPromise([feedbackContainer]);
     }
 }
-//Testando workflow
+
 // --- Lógica dos Modais ---
 let returnSlideId = null;
 
@@ -461,17 +474,17 @@ async function showVideoModal(slide) {
             <div>
                 <h4 class="font-orbitron text-xl text-cyan-300 mb-2">Indicação Superior</h4>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Conceito de ${topic}"><img src="https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+1" class="w-full rounded-md mb-2"><p class="text-sm">Conceito de ${topic}</p></a>
-                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Exercício Resolvido"><img src="https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+2" class="w-full rounded-md mb-2"><p class="text-sm">Exercício Resolvido</p></a>
-                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Aplicação Prática"><img src="https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+3" class="w-full rounded-md mb-2"><p class="text-sm">Aplicação Prática</p></a>
+                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Conceito de ${topic}"><img src="[https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+1](https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+1)" class="w-full rounded-md mb-2"><p class="text-sm">Conceito de ${topic}</p></a>
+                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Exercício Resolvido"><img src="[https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+2](https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+2)" class="w-full rounded-md mb-2"><p class="text-sm">Exercício Resolvido</p></a>
+                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Aplicação Prática"><img src="[https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+3](https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+3)" class="w-full rounded-md mb-2"><p class="text-sm">Aplicação Prática</p></a>
                 </div>
             </div>
              <div>
                 <h4 class="font-orbitron text-xl text-cyan-300 mb-2">Possibilidade Integrativa</h4>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Aula Completa"><img src="https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+4" class="w-full rounded-md mb-2"><p class="text-sm">Aula Completa</p></a>
-                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Dica Rápida"><img src="https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+5" class="w-full rounded-md mb-2"><p class="text-sm">Dica Rápida</p></a>
-                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Documentário Relacionado"><img src="https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+6" class="w-full rounded-md mb-2"><p class="text-sm">Documentário Relacionado</p></a>
+                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Aula Completa"><img src="[https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+4](https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+4)" class="w-full rounded-md mb-2"><p class="text-sm">Aula Completa</p></a>
+                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Dica Rápida"><img src="[https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+5](https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+5)" class="w-full rounded-md mb-2"><p class="text-sm">Dica Rápida</p></a>
+                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Documentário Relacionado"><img src="[https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+6](https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+6)" class="w-full rounded-md mb-2"><p class="text-sm">Documentário Relacionado</p></a>
                 </div>
             </div>
         `;
