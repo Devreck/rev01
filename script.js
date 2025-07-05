@@ -106,10 +106,12 @@ function shuffleArray(array) {
  */
 function extractJsonPayload(text) {
     if (!text) return '';
+    // Tenta encontrar um bloco de código JSON cercado por ```
     const fenced = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
     if (fenced) {
         return fenced[1];
     }
+    // Se não encontrar, procura pelo primeiro '{' e o último '}'
     const first = text.indexOf('{');
     const last = text.lastIndexOf('}');
     if (first !== -1 && last !== -1 && last > first) {
@@ -137,7 +139,7 @@ async function callGeminiApi(prompt, button) {
     button.disabled = true;
     button.innerHTML = '<div class="flex items-center justify-center"><div class="loader"></div><span>Processando...</span></div>';
 
-    const apiUrl = 'https://bsajzksjhpositpoflpr.supabase.co/functions/v1/gemini-proxy'; 
+    const apiUrl = '[https://bsajzksjhpositpoflpr.supabase.co/functions/v1/gemini-proxy](https://bsajzksjhpositpoflpr.supabase.co/functions/v1/gemini-proxy)'; 
     
     const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
 
@@ -208,9 +210,9 @@ async function generateDynamicQuestion(slide, difficulty = 'standard') {
         "incorrectFeedback": "Feedback para as respostas incorretas."
     }`;
 
-    const finalPrompt = basePrompt + " " + difficultyInstruction + ` **REGRA FINAL E MAIS IMPORTANTE: A sua saída deve ser APENAS um objeto JSON válido, sem nenhum texto, markdown ou formatação adicional fora do JSON. O formato DEVE ser exatamente como este exemplo, incluindo as chaves "question", "answers", "correctFeedback", "incorrectFeedback" e a propriedade "correct" (true/false) para cada resposta: ${jsonFormatExample}**`;
+    const finalPrompt = basePrompt + " " + difficultyInstruction + ` **REGRA FINAL E MAIS IMPORTANTE: A sua saída deve ser APENAS um objeto JSON válido, sem nenhum texto, markdown ou formatação adicional fora do JSON. O formato DEVE ser exatamente como este exemplo, incluindo as chaves "question", "answers", "correctFeedback", "incorrectFeedback" e a propriedade "correct" (um booleano 'true' ou 'false') para cada uma das 5 respostas: ${jsonFormatExample}**`;
 
-    const apiUrl = 'https://bsajzksjhpositpoflpr.supabase.co/functions/v1/gemini-proxy'; 
+    const apiUrl = '[https://bsajzksjhpositpoflpr.supabase.co/functions/v1/gemini-proxy](https://bsajzksjhpositpoflpr.supabase.co/functions/v1/gemini-proxy)'; 
     
     const payload = { 
         contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
@@ -236,7 +238,6 @@ async function generateDynamicQuestion(slide, difficulty = 'standard') {
         const parsedData = JSON.parse(jsonString);
         
         if (!parsedData.answers || !parsedData.answers.some(a => typeof a.correct === 'boolean')) {
-            // Este é o erro que estava a acontecer. A validação continua aqui por segurança.
             throw new Error("Invalid question format from API: 'correct' property is missing or malformed.");
         }
 
@@ -480,17 +481,17 @@ async function showVideoModal(slide) {
             <div>
                 <h4 class="font-orbitron text-xl text-cyan-300 mb-2">Indicação Superior</h4>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Conceito de ${topic}"><img src="https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+1" class="w-full rounded-md mb-2"><p class="text-sm">Conceito de ${topic}</p></a>
-                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Exercício Resolvido"><img src="https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+2" class="w-full rounded-md mb-2"><p class="text-sm">Exercício Resolvido</p></a>
-                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Aplicação Prática"><img src="https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+3" class="w-full rounded-md mb-2"><p class="text-sm">Aplicação Prática</p></a>
+                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Conceito de ${topic}"><img src="[https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+1](https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+1)" class="w-full rounded-md mb-2"><p class="text-sm">Conceito de ${topic}</p></a>
+                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Exercício Resolvido"><img src="[https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+2](https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+2)" class="w-full rounded-md mb-2"><p class="text-sm">Exercício Resolvido</p></a>
+                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Aplicação Prática"><img src="[https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+3](https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+3)" class="w-full rounded-md mb-2"><p class="text-sm">Aplicação Prática</p></a>
                 </div>
             </div>
              <div>
                 <h4 class="font-orbitron text-xl text-cyan-300 mb-2">Possibilidade Integrativa</h4>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Aula Completa"><img src="https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+4" class="w-full rounded-md mb-2"><p class="text-sm">Aula Completa</p></a>
-                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Dica Rápida"><img src="https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+5" class="w-full rounded-md mb-2"><p class="text-sm">Dica Rápida</p></a>
-                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Documentário Relacionado"><img src="https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+6" class="w-full rounded-md mb-2"><p class="text-sm">Documentário Relacionado</p></a>
+                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Aula Completa"><img src="[https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+4](https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+4)" class="w-full rounded-md mb-2"><p class="text-sm">Aula Completa</p></a>
+                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Dica Rápida"><img src="[https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+5](https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+5)" class="w-full rounded-md mb-2"><p class="text-sm">Dica Rápida</p></a>
+                     <a href="#" class="block bg-gray-800/50 p-2 rounded-lg hover:bg-gray-700/70" title="Assistir vídeo sobre Documentário Relacionado"><img src="[https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+6](https://placehold.co/160x90/1a1a2e/4169E1?text=Vídeo+6)" class="w-full rounded-md mb-2"><p class="text-sm">Documentário Relacionado</p></a>
                 </div>
             </div>
         `;
