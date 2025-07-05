@@ -2,7 +2,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
-console.log("Função gemini-proxy iniciada!"); // Log de verificação inicial
+console.log("Função gemini-proxy iniciada!"); // Log para sabermos que a nova versão está ativa
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,7 +10,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log(`Recebido pedido: ${req.method}`);
+  console.log(`Recebido pedido do tipo: ${req.method}`);
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -18,8 +18,8 @@ serve(async (req) => {
   try {
     const apiKey = Deno.env.get('GOOGLE_API_KEY');
     if (!apiKey) {
-      console.error("[ERRO CRÍTICO] Segredo 'GOOGLE_API_KEY' não foi encontrado no ambiente do Supabase.");
-      throw new Error("Chave da API do Google não foi encontrada no servidor.");
+      console.error("[ERRO CRÍTICO] O segredo 'GOOGLE_API_KEY' não foi encontrado no ambiente do Supabase.");
+      throw new Error("A chave da API do Google não foi encontrada no servidor.");
     }
 
     const requestBody = await req.json();
@@ -35,22 +35,22 @@ serve(async (req) => {
     });
 
     const responseText = await geminiResponse.text();
-
+    
     console.log("<== Resposta Bruta Recebida do Google Gemini:", responseText);
 
     if (!geminiResponse.ok) {
       console.error("A API do Google Gemini retornou um erro de status.", `Status: ${geminiResponse.status}`);
       throw new Error(`Erro na API do Google: ${responseText}`);
     }
-
-    // A resposta do Google foi bem-sucedida, vamos enviá-la de volta para o jogo.
+    
+    // Se tudo correu bem, envia a resposta do Google de volta para o jogo
     return new Response(responseText, {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
 
   } catch (error) {
-    console.error("[ERRO DENTRO DO TRY...CATCH]", error.message);
+    console.error("[ERRO DENTRO DA FUNÇÃO]", error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
