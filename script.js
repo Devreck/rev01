@@ -100,6 +100,20 @@ function shuffleArray(array) {
     }
 }
 
+function extractJsonPayload(text) {
+    if (!text) return '';
+    const fenced = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+    if (fenced) {
+        return fenced[1];
+    }
+    const first = text.indexOf('{');
+    const last = text.lastIndexOf('}');
+    if (first !== -1 && last !== -1 && last > first) {
+        return text.slice(first, last + 1);
+    }
+    return text;
+}
+
 function createButton(text, onClick, className, disabled = false, tooltip = '') {
     const button = document.createElement('button');
     button.className = `action-button w-full text-left font-bold py-3 px-5 rounded-md ${className}`;
@@ -199,11 +213,7 @@ async function generateDynamicQuestion(slide, difficulty = 'standard') {
         let jsonString = result.candidates?.[0]?.content?.parts?.[0]?.text;
         if (!jsonString) throw new Error('No text in API response');
 
-        const jsonRegex = /```json\s*([\s\S]*?)\s*```/s;
-        const match = jsonString.match(jsonRegex);
-        if (match) {
-            jsonString = match[1];
-        }
+        jsonString = extractJsonPayload(jsonString);
 
         const parsedData = JSON.parse(jsonString);
         
