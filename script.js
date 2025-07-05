@@ -2,10 +2,6 @@
 // ARQUIVO DE CONFIGURAÇÃO E BANCO DE DADOS DA MISSÃO
 // ===================================================================================
 
-// IMPORTANTE: Insira sua chave de API do Google AI Studio aqui.
-// Obtenha sua chave em: https://aistudio.google.com/
-const API_KEY = "SUA_CHAVE_API_VAI_AQUI"; 
-
 /**
  * @description Contém toda a estrutura narrativa e de desafios da missão.
  * Cada chave é um ID de slide único.
