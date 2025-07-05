@@ -457,6 +457,3 @@ window.onload = () => {
     setupEventListeners();
     renderSlide(currentSlideId);
 };
-    </script>
-</body>
-</html>
