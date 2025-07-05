@@ -355,6 +355,25 @@ async function renderDiagnosis(slide, difficulty) {
         extraHelpContainer.appendChild(enemButton);
         extraHelpContainer.appendChild(videoButton);
         DOM.choicesContainer.appendChild(extraHelpContainer);
+    } else {
+        const textEl = DOM.textContainer.querySelector('.text-gray-300');
+        if (textEl && dynamicSlide.text) {
+            textEl.innerHTML = dynamicSlide.text;
+        }
+
+        if (dynamicSlide.question) {
+            const questionContainer = document.createElement('div');
+            questionContainer.className = 'mt-6';
+            questionContainer.innerHTML = `<p class='font-bold text-red-400 text-lg'>${dynamicSlide.question}</p>`;
+            DOM.textContainer.appendChild(questionContainer);
+        }
+
+        if (dynamicSlide.choices) {
+            dynamicSlide.choices.forEach(choice => {
+                const button = createButton(choice.text, () => renderSlide(choice.nextSlide), 'justify-center bg-indigo-700 hover:bg-indigo-600 text-gray-100 border-indigo-900', false, 'Avançar na história.');
+                DOM.choicesContainer.appendChild(button);
+            });
+        }
     }
 }
 
