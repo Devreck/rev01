@@ -18,29 +18,43 @@ serve(async (req) => {
       throw new Error("Chave da API do Google não foi encontrada no servidor.");
     }
     
-    // CORREÇÃO: Usando o modelo mais recente e estável
+    // Usando o modelo mais recente e estável
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
 
-    const requestBody = await req.json();
+    // Pega o corpo da requisição que veio do script.js
+    const originalPayload = await req.json();
+
+    // *** A CORREÇÃO FINAL ESTÁ AQUI ***
+    // Adicionamos a configuração para forçar a saída em JSON.
+    const modifiedPayload = {
+      ...originalPayload,
+      generationConfig: {
+        response_mime_type: "application/json",
+      }
+    };
 
     const geminiResponse = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify(modifiedPayload), // Enviamos o payload modificado
     });
 
     const responseText = await geminiResponse.text();
 
     if (!geminiResponse.ok) {
+      // Se houver um erro, o responseText terá a mensagem detalhada do Google.
       throw new Error(`Erro na API do Google: ${responseText}`);
     }
 
+    // Se tudo correu bem, a resposta já é um JSON garantido.
+    // O seu script.js já sabe como processá-la.
     return new Response(responseText, {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
 
   } catch (error) {
+    // Captura qualquer erro no processo e o envia de volta para o console do navegador.
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
