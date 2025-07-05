@@ -2,7 +2,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
-console.log("Função gemini-proxy iniciada!"); // Log para sabermos que a nova versão está ativa
+console.log("Função gemini-proxy iniciada!"); // Log to know the new version is active
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,7 +10,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log(`Recebido pedido do tipo: ${req.method}`);
+  console.log(`Received request: ${req.method}`);
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -18,15 +18,17 @@ serve(async (req) => {
   try {
     const apiKey = Deno.env.get('GOOGLE_API_KEY');
     if (!apiKey) {
-      console.error("[ERRO CRÍTICO] O segredo 'GOOGLE_API_KEY' não foi encontrado no ambiente do Supabase.");
-      throw new Error("A chave da API do Google não foi encontrada no servidor.");
+      console.error("[CRITICAL ERROR] Secret 'GOOGLE_API_KEY' not found in Supabase environment.");
+      throw new Error("Google API Key not found on server.");
     }
 
     const requestBody = await req.json();
+    console.log("==> Request Body Received from Game:", JSON.stringify(requestBody, null, 2));
 
-    console.log("==> Corpo do Pedido Recebido do Jogo:", JSON.stringify(requestBody, null, 2));
+    // THE FIX IS HERE: Changed "gemini-pro" to "gemini-1.0-pro"
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key=${apiKey}`;
 
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+    console.log("--> Calling Google API URL:", apiUrl); // Log to confirm the new URL
 
     const geminiResponse = await fetch(apiUrl, {
       method: 'POST',
@@ -35,22 +37,21 @@ serve(async (req) => {
     });
 
     const responseText = await geminiResponse.text();
-    
-    console.log("<== Resposta Bruta Recebida do Google Gemini:", responseText);
+    console.log("<== Raw Response Received from Google Gemini:", responseText);
 
     if (!geminiResponse.ok) {
-      console.error("A API do Google Gemini retornou um erro de status.", `Status: ${geminiResponse.status}`);
-      throw new Error(`Erro na API do Google: ${responseText}`);
+      console.error("Google Gemini API returned a status error.", `Status: ${geminiResponse.status}`);
+      throw new Error(`Error from Google API: ${responseText}`);
     }
     
-    // Se tudo correu bem, envia a resposta do Google de volta para o jogo
+    // If successful, send the Google response back to the game
     return new Response(responseText, {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
 
   } catch (error) {
-    console.error("[ERRO DENTRO DA FUNÇÃO]", error.message);
+    console.error("[ERROR INSIDE TRY...CATCH]", error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
