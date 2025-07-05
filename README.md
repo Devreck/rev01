@@ -74,3 +74,6 @@ Adicionar Novos Desafios: Para adicionar um novo desafio, crie um novo objeto de
 Adicionar Novos Blocos ou Capítulos: Siga a estrutura dos objetos isHub:!0 para criar novos painéis de missão e conecte-os através da propriedade nextChapterSlide.
 
 Fim da transmissão.
+
+6. Solução de Problemas
+Se nenhum desafio for gerado e apenas o texto do slide aparecer, verifique a implantação da função `gemini-proxy` no Supabase e confirme que o segredo `GOOGLE_API_KEY` está definido corretamente. Erros de autenticação com a API do Google impedem a criação das questões e o jogo exibirá somente o conteúdo estático.
