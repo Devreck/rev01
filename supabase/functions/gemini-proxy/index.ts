@@ -2,13 +2,15 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
+console.log("Função gemini-proxy iniciada!"); // Log de verificação inicial
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
 serve(async (req) => {
-  // Trata a requisição pre-flight do navegador (necessário para CORS)
+  console.log(`Recebido pedido: ${req.method}`);
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -16,16 +18,15 @@ serve(async (req) => {
   try {
     const apiKey = Deno.env.get('GOOGLE_API_KEY');
     if (!apiKey) {
-      console.error("ERRO CRÍTICO: Segredo 'GOOGLE_API_KEY' não encontrado no Supabase.");
-      throw new Error("Chave da API do Google não encontrada.");
+      console.error("[ERRO CRÍTICO] Segredo 'GOOGLE_API_KEY' não foi encontrado no ambiente do Supabase.");
+      throw new Error("Chave da API do Google não foi encontrada no servidor.");
     }
-
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
 
     const requestBody = await req.json();
 
-    // LOG 1: Mostrar exatamente o que estamos a enviar para o Gemini
-    console.log("==> ENVIANDO PARA O GEMINI:", JSON.stringify(requestBody, null, 2));
+    console.log("==> Corpo do Pedido Recebido do Jogo:", JSON.stringify(requestBody, null, 2));
+
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
 
     const geminiResponse = await fetch(apiUrl, {
       method: 'POST',
@@ -35,23 +36,21 @@ serve(async (req) => {
 
     const responseText = await geminiResponse.text();
 
-    // LOG 2: Mostrar a resposta bruta que o Gemini nos devolveu
-    console.log("<== RESPOSTA BRUTA DO GEMINI:", responseText);
+    console.log("<== Resposta Bruta Recebida do Google Gemini:", responseText);
 
     if (!geminiResponse.ok) {
-      console.error("A API do Google retornou um erro:", responseText);
+      console.error("A API do Google Gemini retornou um erro de status.", `Status: ${geminiResponse.status}`);
       throw new Error(`Erro na API do Google: ${responseText}`);
     }
 
-    const data = JSON.parse(responseText);
-
-    return new Response(JSON.stringify(data), {
+    // A resposta do Google foi bem-sucedida, vamos enviá-la de volta para o jogo.
+    return new Response(responseText, {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
 
   } catch (error) {
-    console.error("ERRO NA FUNÇÃO PROXY:", error.message);
+    console.error("[ERRO DENTRO DO TRY...CATCH]", error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
