@@ -120,7 +120,7 @@ async function callGeminiApi(prompt, button) {
     button.disabled = true;
     button.innerHTML = '<div class="flex items-center justify-center"><div class="loader"></div><span>Processando...</span></div>';
 
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+    const apiUrl = 'https://bsajzksjhpositpoflpr.supabase.co/functions/v1/gemini-proxy'; 
     
     const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
 
@@ -179,7 +179,7 @@ async function generateDynamicQuestion(slide, difficulty = 'standard') {
 
     const finalPrompt = basePrompt + " " + difficultyInstruction + " **REGRA FINAL: Retorne APENAS um objeto JSON válido, sem nenhum texto ou formatação adicional fora do JSON.**";
 
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+    const apiUrl = 'https://bsajzksjhpositpoflpr.supabase.co/functions/v1/gemini-proxy'; 
     
     const payload = { 
         contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
