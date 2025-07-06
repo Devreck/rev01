@@ -47,4 +47,4 @@ npm-debug.log*
 
 # Arquivos de build (se usar futuramente)
 dist/
-build/
+build/config.js
