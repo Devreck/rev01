@@ -211,9 +211,9 @@ function createButton(text, onClick, className, disabled = false) {
 // GEMINI API
 // ===================================================================================
 
-async function callGeminiApi(prompt, button) {
-    if (!apiKeyLoaded) {
-        showSystemMessage('❌ I.A. Central não está disponível. Modo offline ativo.', 'error');
+aasync function callGeminiApi(prompt, button) {
+    if (CONFIG.USE_MOCK_MODE) {
+        // Código do modo mock...
         return;
     }
     
@@ -223,26 +223,29 @@ async function callGeminiApi(prompt, button) {
     button.innerHTML = '<div class="flex items-center justify-center"><div class="loader"></div><span>Processando...</span></div>';
 
     try {
-        // Tentar usar função do Supabase primeiro
-        let response;
-        if (typeof CONFIG !== 'undefined' && CONFIG.SUPABASE_FUNCTION_URL) {
-            response = await fetch(CONFIG.SUPABASE_FUNCTION_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ role: "user", parts: [{ text: prompt }] }]
-                })
-            });
-        } else {
-            // Fallback para API direta
-            response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ role: "user", parts: [{ text: prompt }] }]
-                })
-            });
+        // Tentar usar função SQL do Supabase
+        const { data, error } = await supabase.rpc('gemini_proxy', {
+            request_body: { prompt: prompt }
+        });
+
+        if (error) throw error;
+
+        let text = "Ocorreu uma interferência na comunicação com a I.A. Tente novamente.";
+        if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+            text = data.candidates[0].content.parts[0].text;
         }
+        
+        geminiOutputContainerEl.innerHTML = `<div class="gemini-response">${text.replace(/\n/g, '<br>')}</div>`;
+        if (window.MathJax) { MathJax.typeset([geminiOutputContainerEl]); }
+
+    } catch (error) {
+        console.error("Gemini API call failed:", error);
+        geminiOutputContainerEl.innerHTML = `<div class="gemini-response text-red-400">Falha na conexão com a I.A. Central: ${error.message}</div>`;
+    } finally {
+         button.disabled = false;
+         button.innerHTML = originalButtonText;
+    }
+}
 
         if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
 
