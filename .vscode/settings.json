@@ -20,5 +20,10 @@
   ],
   "[typescript]": {
     "editor.defaultFormatter": "denoland.vscode-deno"
-  }
+  },
+  "yaml.validate": false,
+  "yaml.completion": false,
+  "github-actions.workflows.pinned.workflows": [],
+  "problems.decorations.enabled": false,
+  "yaml.schemas": {}
 }
