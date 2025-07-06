@@ -11,22 +11,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
+    - name: Setup Supabase CLI
+      uses: supabase/setup-cli@v1
       with:
-        node-version: '18'
-
-    - name: Install Supabase CLI
-      run: |
-        curl -fsSL https://supabase.com/install.sh | sh
-        echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-    - name: Verify Supabase CLI
-      run: supabase --version
+        version: latest
 
     - name: Deploy Functions
       run: |
-        supabase functions deploy --project-ref $PROJECT_ID --token $ACCESS_TOKEN
-      env:
-        PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
-        ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        supabase functions deploy --project-ref ${{ secrets.SUPABASE_PROJECT_ID }} --token ${{ secrets.SUPABASE_ACCESS_TOKEN }}
