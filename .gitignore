@@ -1,20 +1,21 @@
-# Supabase
-.branches
-.temp
-
-# dotenvx
-.env.keys
-.env.local
-.env.*.local
-
-# Arquivos de Variáveis de Ambiente
+# Environment variables
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Pasta de dependências do Node.js (sempre ignorar!)
-node_modules
+# API Keys
+config.js
+api-keys.js
 
-# Arquivos de sistema do macOS
-.DS_Store
-
-# Arquivos de log e debug
+# Logs
 *.log
+npm-debug.log*
+
+# Node modules (se usar)
+node_modules/
+
+# OS generated files
+.DS_Store
+Thumbs.db
