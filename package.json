@@ -27,5 +27,8 @@
   "bugs": {
     "url": "https://github.com/seu-usuario/sos-aurora/issues"
   },
-  "homepage": "https://github.com/seu-usuario/sos-aurora#readme"
+  "homepage": "https://github.com/seu-usuario/sos-aurora#readme",
+  "devDependencies": {
+    "supabase": ">=1.8.1"
+  }
 }
