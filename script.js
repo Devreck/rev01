@@ -35,6 +35,157 @@ const videoGridEl = document.getElementById('video-grid');
 const videoCloseBtn = document.getElementById('video-close-btn');
 
 // ===================================================================================
+// QUESTÕES MOCK PARA DEMONSTRAÇÃO
+// ===================================================================================
+
+const mockQuestions = {
+    'c1_b3_s1': {
+        question: "O painel de controle do reator mostra 25°C. O sistema de refrigeração só aceita comandos em Fahrenheit. Qual é a temperatura correta para inserir?",
+        answers: [
+            { text: "77°F", correct: true },
+            { text: "45°F", correct: false },
+            { text: "57°F", correct: false },
+            { text: "93°F", correct: false },
+            { text: "32°F", correct: false }
+        ],
+        correctFeedback: "Correto! Usando a fórmula T_F = T_C × 1.8 + 32: 25 × 1.8 + 32 = 45 + 32 = 77°F",
+        incorrectFeedback: "Incorreto. Use a fórmula de conversão: T_F = T_C × 1.8 + 32"
+    },
+    'c1_b3_s2': {
+        question: "Dois sensores registram variações de temperatura. Sensor A: 15°C, Sensor B: 15 K, Sensor C: 15°F. Quais registraram a mesma variação de energia térmica?",
+        answers: [
+            { text: "Sensores A e B", correct: true },
+            { text: "Sensores A e C", correct: false },
+            { text: "Sensores B e C", correct: false },
+            { text: "Todos os sensores", correct: false },
+            { text: "Nenhum sensor", correct: false }
+        ],
+        correctFeedback: "Correto! Variações em Celsius e Kelvin são equivalentes (ΔT_C = ΔT_K), mas Fahrenheit é diferente.",
+        incorrectFeedback: "Incorreto. Lembre-se: variações em °C e K são iguais, mas °F é diferente."
+    },
+    'c1_b3_s3': {
+        question: "Um termômetro marca 10°X no gelo (0°C) e 90°X na água fervente (100°C). Qual temperatura em Celsius corresponde a 50°X?",
+        answers: [
+            { text: "50°C", correct: true },
+            { text: "40°C", correct: false },
+            { text: "60°C", correct: false },
+            { text: "25°C", correct: false },
+            { text: "75°C", correct: false }
+        ],
+        correctFeedback: "Correto! A relação é linear: (50-10)/(90-10) = (T-0)/(100-0), então T = 50°C",
+        incorrectFeedback: "Incorreto. Use a relação linear entre as escalas para encontrar a temperatura."
+    },
+    'c1_b4_s1': {
+        question: "Dois materiais de mesma massa recebem 1000J de calor. Material A aquece 10°C, Material B aquece 20°C. Qual tem maior calor específico?",
+        answers: [
+            { text: "Material A", correct: true },
+            { text: "Material B", correct: false },
+            { text: "Ambos iguais", correct: false },
+            { text: "Impossível determinar", correct: false },
+            { text: "Depende da temperatura inicial", correct: false }
+        ],
+        correctFeedback: "Correto! Menor variação de temperatura indica maior calor específico (Q = m × c × ΔT)",
+        incorrectFeedback: "Incorreto. Quanto menor a variação de temperatura, maior o calor específico."
+    },
+    'c1_b4_s2': {
+        question: "Para derreter completamente 2 kg de gelo a 0°C, sabendo que o calor latente de fusão é 334 kJ/kg, quanta energia é necessária?",
+        answers: [
+            { text: "668 kJ", correct: true },
+            { text: "334 kJ", correct: false },
+            { text: "167 kJ", correct: false },
+            { text: "1002 kJ", correct: false },
+            { text: "500 kJ", correct: false }
+        ],
+        correctFeedback: "Correto! Q = m × L = 2 kg × 334 kJ/kg = 668 kJ",
+        incorrectFeedback: "Incorreto. Use a fórmula Q = m × L (massa × calor latente)"
+    },
+    'c1_b4_s3': {
+        question: "100g de metal a 80°C são colocados em 200g de água a 20°C. A temperatura final é 30°C. Qual é o calor específico do metal? (c_água = 4,18 J/g°C)",
+        answers: [
+            { text: "1,67 J/g°C", correct: true },
+            { text: "2,09 J/g°C", correct: false },
+            { text: "0,84 J/g°C", correct: false },
+            { text: "3,34 J/g°C", correct: false },
+            { text: "4,18 J/g°C", correct: false }
+        ],
+        correctFeedback: "Correto! Usando Q_cedido + Q_recebido = 0: 100×c×(30-80) + 200×4,18×(30-20) = 0",
+        incorrectFeedback: "Incorreto. Use o princípio das trocas de calor: Q_cedido + Q_recebido = 0"
+    },
+    'c1_b5_s1': {
+        question: "Um painel do casco com área 2 m², espessura 0,1 m e condutividade térmica 50 W/m°C tem uma face a 20°C e outra a -200°C. Qual o fluxo de calor?",
+        answers: [
+            { text: "220 kW", correct: true },
+            { text: "110 kW", correct: false },
+            { text: "440 kW", correct: false },
+            { text: "22 kW", correct: false },
+            { text: "2,2 kW", correct: false }
+        ],
+        correctFeedback: "Correto! Φ = k×A×ΔT/L = 50×2×220/0,1 = 220.000 W = 220 kW",
+        incorrectFeedback: "Incorreto. Use a Lei de Fourier: Φ = k×A×ΔT/L"
+    },
+    'c1_b5_s2': {
+        question: "Dois painéis idênticos, A e B, são submetidos à mesma diferença de temperatura. O painel A permite um fluxo de calor 3 vezes maior que B. Qual a relação entre suas condutividades?",
+        answers: [
+            { text: "k_A = 3 × k_B", correct: true },
+            { text: "k_A = k_B / 3", correct: false },
+            { text: "k_A = k_B", correct: false },
+            { text: "k_A = 9 × k_B", correct: false },
+            { text: "Impossível determinar", correct: false }
+        ],
+        correctFeedback: "Correto! Como Φ = k×A×ΔT/L e tudo é igual exceto k, então Φ_A/Φ_B = k_A/k_B = 3",
+        incorrectFeedback: "Incorreto. O fluxo de calor é diretamente proporcional à condutividade térmica."
+    },
+    'c1_b6_s1': {
+        question: "Em microgravidade, um aquecedor é ligado em um compartimento fechado. Como o ar aquecido se comportará?",
+        answers: [
+            { text: "Não formará correntes de convecção naturais", correct: true },
+            { text: "Subirá normalmente", correct: false },
+            { text: "Descerá", correct: false },
+            { text: "Formará correntes mais intensas", correct: false },
+            { text: "Comportamento idêntico à Terra", correct: false }
+        ],
+        correctFeedback: "Correto! Sem gravidade, não há força para criar correntes de convecção natural baseadas em diferenças de densidade.",
+        incorrectFeedback: "Incorreto. A convecção natural depende da gravidade para criar movimento devido às diferenças de densidade."
+    },
+    'c1_b6_s2': {
+        question: "Um painel radiador de 10 m² com emissividade 0,8 opera a 400 K. Qual a potência irradiada? (σ = 5,67×10⁻⁸ W/m²K⁴)",
+        answers: [
+            { text: "116 kW", correct: true },
+            { text: "58 kW", correct: false },
+            { text: "232 kW", correct: false },
+            { text: "29 kW", correct: false },
+            { text: "145 kW", correct: false }
+        ],
+        correctFeedback: "Correto! P = σ×ε×A×T⁴ = 5,67×10⁻⁸×0,8×10×400⁴ = 116.070 W ≈ 116 kW",
+        incorrectFeedback: "Incorreto. Use a Lei de Stefan-Boltzmann: P = σ×ε×A×T⁴"
+    },
+    'c2_b9_s1': {
+        question: "Uma onda de comunicação tem frequência 3×10⁸ Hz e comprimento de onda 1 m. Qual sua velocidade de propagação?",
+        answers: [
+            { text: "3×10⁸ m/s", correct: true },
+            { text: "3×10⁶ m/s", correct: false },
+            { text: "1×10⁸ m/s", correct: false },
+            { text: "9×10⁸ m/s", correct: false },
+            { text: "3×10⁷ m/s", correct: false }
+        ],
+        correctFeedback: "Correto! v = λ×f = 1 m × 3×10⁸ Hz = 3×10⁸ m/s (velocidade da luz)",
+        incorrectFeedback: "Incorreto. Use a equação fundamental: v = λ×f"
+    },
+    'c3_b13_s1': {
+        question: "Um feixe de luz passa do ar (n=1,0) para um material com ângulo de incidência 30° e ângulo de refração 20°. Qual o índice de refração do material?",
+        answers: [
+            { text: "1,46", correct: true },
+            { text: "1,73", correct: false },
+            { text: "0,68", correct: false },
+            { text: "2,92", correct: false },
+            { text: "1,00", correct: false }
+        ],
+        correctFeedback: "Correto! Pela Lei de Snell: n₂ = n₁×sen(30°)/sen(20°) = 1,0×0,5/0,342 = 1,46",
+        incorrectFeedback: "Incorreto. Use a Lei de Snell: n₁×sen(θ₁) = n₂×sen(θ₂)"
+    }
+};
+
+// ===================================================================================
 // BANCO DE DADOS DA HISTÓRIA
 // ===================================================================================
 
@@ -80,11 +231,14 @@ async function initializeApp() {
         if (typeof CONFIG !== 'undefined') {
             // Inicializar Supabase
             supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
-            await loadApiKey();
+            if (!CONFIG.USE_MOCK_MODE) {
+                await loadApiKey();
+            } else {
+                apiKeyLoaded = true;
+                showSystemMessage('🎭 Modo demonstração ativado', 'info');
+            }
         } else {
             console.warn('CONFIG não encontrado, usando modo local');
-            // Usar API key local como fallback
-            GEMINI_API_KEY = 'AIzaSyBVkxYFxiDWqrTVrwl5xMuZ5qZZJuNC-nA';
             apiKeyLoaded = true;
         }
         
@@ -95,8 +249,6 @@ async function initializeApp() {
     } catch (error) {
         console.error('Erro na inicialização:', error);
         showSystemMessage(`❌ Erro de configuração: ${error.message}`, 'error');
-        // Continuar em modo local
-        GEMINI_API_KEY = 'AIzaSyBVkxYFxiDWqrTVrwl5xMuZ5qZZJuNC-nA';
         apiKeyLoaded = true;
         renderSlide(currentSlideId);
     }
@@ -126,16 +278,9 @@ async function loadApiKey() {
         
     } catch (error) {
         console.error('Erro ao carregar API key:', error);
-        
-        // Fallback para desenvolvimento local
-        if (typeof CONFIG !== 'undefined' && CONFIG.GEMINI_API_KEY_LOCAL) {
-            GEMINI_API_KEY = CONFIG.GEMINI_API_KEY_LOCAL;
-            apiKeyLoaded = true;
-            showSystemMessage('⚠️ Usando conexão local de emergência', 'info');
-        } else {
-            showSystemMessage(`❌ ${error.message}`, 'error');
-            apiKeyLoaded = false;
-        }
+        showSystemMessage(`❌ ${error.message}. Ativando modo demonstração.`, 'error');
+        CONFIG.USE_MOCK_MODE = true;
+        apiKeyLoaded = true;
     }
 }
 
@@ -211,9 +356,31 @@ function createButton(text, onClick, className, disabled = false) {
 // GEMINI API
 // ===================================================================================
 
-aasync function callGeminiApi(prompt, button) {
+async function callGeminiApi(prompt, button) {
     if (CONFIG.USE_MOCK_MODE) {
-        // Código do modo mock...
+        const originalButtonText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<div class="flex items-center justify-center"><div class="loader"></div><span>Processando...</span></div>';
+        
+        // Simular delay da API
+        setTimeout(() => {
+            geminiOutputContainerEl.innerHTML = `
+                <div class="gemini-response">
+                    <strong>🤖 I.A. Central - Modo Demonstração</strong><br><br>
+                    Esta é uma resposta simulada. Em produção, aqui apareceria uma explicação 
+                    detalhada sobre o conceito físico solicitado, incluindo fórmulas, exemplos 
+                    práticos e orientações para resolução do problema.<br><br>
+                    <em>Para ativar respostas reais da I.A., configure corretamente as credenciais do Supabase.</em>
+                </div>
+            `;
+            button.disabled = false;
+            button.innerHTML = originalButtonText;
+        }, 1500);
+        return;
+    }
+
+    if (!apiKeyLoaded) {
+        showSystemMessage('❌ I.A. Central não está disponível. Modo offline ativo.', 'error');
         return;
     }
     
@@ -223,29 +390,14 @@ aasync function callGeminiApi(prompt, button) {
     button.innerHTML = '<div class="flex items-center justify-center"><div class="loader"></div><span>Processando...</span></div>';
 
     try {
-        // Tentar usar função SQL do Supabase
-        const { data, error } = await supabase.rpc('gemini_proxy', {
-            request_body: { prompt: prompt }
+        // Usar API direta do Gemini
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ role: "user", parts: [{ text: prompt }] }]
+            })
         });
-
-        if (error) throw error;
-
-        let text = "Ocorreu uma interferência na comunicação com a I.A. Tente novamente.";
-        if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-            text = data.candidates[0].content.parts[0].text;
-        }
-        
-        geminiOutputContainerEl.innerHTML = `<div class="gemini-response">${text.replace(/\n/g, '<br>')}</div>`;
-        if (window.MathJax) { MathJax.typeset([geminiOutputContainerEl]); }
-
-    } catch (error) {
-        console.error("Gemini API call failed:", error);
-        geminiOutputContainerEl.innerHTML = `<div class="gemini-response text-red-400">Falha na conexão com a I.A. Central: ${error.message}</div>`;
-    } finally {
-         button.disabled = false;
-         button.innerHTML = originalButtonText;
-    }
-}
 
         if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
 
@@ -260,8 +412,8 @@ aasync function callGeminiApi(prompt, button) {
         if (window.MathJax) { MathJax.typeset([geminiOutputContainerEl]); }
 
     } catch (error) {
-        console.error("Gemini API call failed:", error);
-        geminiOutputContainerEl.innerHTML = `<div class="gemini-response text-red-400">Falha crítica na conexão com a I.A. Central. Modo offline ativo.</div>`;
+        console.error("Gemini API call failed:", error);       
+        geminiOutputContainerEl.innerHTML = `<div class="gemini-response text-red-400">Falha crítica na conexão com a I.A. Central: ${error.message}</div>`;
     } finally {
          button.disabled = false;
          button.innerHTML = originalButtonText;
@@ -269,12 +421,24 @@ aasync function callGeminiApi(prompt, button) {
 }
 
 async function generateDynamicQuestion(slide, difficulty = 'standard') {
+    // Se estiver em modo mock, usar questões pré-definidas
+    if (CONFIG.USE_MOCK_MODE && mockQuestions[currentSlideId]) {
+        const mockQuestion = mockQuestions[currentSlideId];
+        // Criar uma cópia para não modificar o original
+        const questionCopy = {
+            ...mockQuestion,
+            answers: [...mockQuestion.answers]
+        };
+        shuffleArray(questionCopy.answers);
+        return { ...slide, ...questionCopy };
+    }
+
     if (!apiKeyLoaded) {
         showSystemMessage('❌ I.A. Central indisponível. Usando questão de emergência.', 'error');
         return createFallbackSlide(slide);
     }
 
-const promptTypes = [];
+    const promptTypes = [];
     if (slide.geminiCalcPrompt) promptTypes.push(slide.geminiCalcPrompt);
     if (slide.geminiConceptPrompt) promptTypes.push(slide.geminiConceptPrompt);
 
@@ -301,49 +465,37 @@ const promptTypes = [];
     const finalPrompt = basePrompt + " " + difficultyInstruction;
 
     try {
-        let response;
-        const requestBody = {
-            contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
-            generationConfig: {
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: "OBJECT",
-                    properties: {
-                        question: { type: "STRING" }, 
-                        answers: {
-                            type: "ARRAY",
-                            items: {
-                                type: "OBJECT",
-                                properties: {
-                                    text: { type: "STRING" },
-                                    correct: { type: "BOOLEAN" }
-                                },
-                                required: ["text", "correct"]
-                            }
+        // Usar API direta do Gemini
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            question: { type: "STRING" }, 
+                            answers: {
+                                type: "ARRAY",
+                                items: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        text: { type: "STRING" },
+                                        correct: { type: "BOOLEAN" }
+                                    },
+                                    required: ["text", "correct"]
+                                }
+                            },
+                            correctFeedback: { type: "STRING" },
+                            incorrectFeedback: { type: "STRING" }
                         },
-                        correctFeedback: { type: "STRING" },
-                        incorrectFeedback: { type: "STRING" }
-                    },
-                    required: ["question", "answers", "correctFeedback", "incorrectFeedback"]
+                        required: ["question", "answers", "correctFeedback", "incorrectFeedback"]
+                    }
                 }
-            }
-        };
-
-        // Tentar usar função do Supabase primeiro
-        if (typeof CONFIG !== 'undefined' && CONFIG.SUPABASE_FUNCTION_URL) {
-            response = await fetch(CONFIG.SUPABASE_FUNCTION_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
-            });
-        } else {
-            // Fallback para API direta
-            response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
-            });
-        }
+            })
+        });
         
         if (!response.ok) {
             throw new Error(`API response not OK: ${response.status}`);
