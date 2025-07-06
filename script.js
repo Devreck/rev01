@@ -67,7 +67,17 @@ const storyData = {
         ],
         nextChapterSlide: 'c2_hub'
     },
-    // ... resto dos dados do storyData (mantém igual)
+    'c1_b3_s1': {
+        isDiagnosis: true,
+        title: "Protocolo de Calibração - Termometria",
+        image: "https://placehold.co/800x400/1a1a2e/87CEEB?text=Calibração+de+Sensores",
+        text: "Os sensores de temperatura estão descalibrados. Você precisa resolver um problema de termometria para restaurar a precisão.",
+        geminiCalcPrompt: "Crie uma questão de termometria sobre conversão de escalas de temperatura (Celsius, Fahrenheit, Kelvin) no contexto de uma estação espacial. Inclua cálculos práticos.",
+        geminiConceptPrompt: "Crie uma questão conceitual sobre termometria e escalas de temperatura aplicada ao controle térmico de uma estação espacial.",
+        nextChoices: [
+            { text: "Retornar ao Hub de Diagnóstico", nextSlide: 'c1_hub' }
+        ]
+    }
 };
 
 // ===================================================================================
@@ -258,7 +268,8 @@ async function callGeminiApi(prompt, button) {
             }
         };
         
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
+        // CORREÇÃO: Usar a URL da função do Supabase
+        const response = await fetch(CONFIG.SUPABASE_FUNCTION_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -353,7 +364,8 @@ async function generateDynamicQuestion(slide, difficulty = 'standard') {
             }
         };
         
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
+        // CORREÇÃO: Usar a URL da função do Supabase
+        const response = await fetch(CONFIG.SUPABASE_FUNCTION_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -523,8 +535,163 @@ async function renderSlide(slideId, difficulty = 'standard') {
     }, 500);
 }
 
-// ... resto das funções renderHub, renderDiagnosis, handleAnswer, etc.
-// (mantém a mesma lógica, apenas com as melhorias de integração)
+// Função para renderizar o hub de seleção
+function renderHub(slide) {
+    if (!DOM.choicesContainer) return;
+    
+    // Renderizar blocos do hub
+    if (slide.blocks) {
+        slide.blocks.forEach(block => {
+            const isCompleted = gameState.progress[`c${slide.chapter}`]?.[block.id] || false;
+            const buttonClass = isCompleted 
+                ? 'bg-green-700 hover:bg-green-600 text-gray-100 border-green-900' 
+                : 'bg-yellow-700 hover:bg-yellow-600 text-gray-100 border-yellow-900';
+            
+            const statusIcon = isCompleted ? '✅' : '🔧';
+            
+            const button = createButton(
+                `${statusIcon} ${block.name}`,
+                () => renderSlide(block.startSlide),
+                buttonClass,
+                false,
+                isCompleted ? 'Diagnóstico concluído' : 'Iniciar diagnóstico'
+            );
+            
+            DOM.choicesContainer.appendChild(button);
+        });
+        
+        // Verificar se todos os blocos foram completados
+        const allCompleted = slide.blocks.every(block => 
+            gameState.progress[`c${slide.chapter}`]?.[block.id] || false
+        );
+        
+        if (allCompleted && slide.nextChapterSlide) {
+            const nextButton = createButton(
+                '🚀 Avançar para Próximo Capítulo',
+                () => renderSlide(slide.nextChapterSlide),
+                'bg-purple-700 hover:bg-purple-600 text-gray-100 border-purple-900',
+                false,
+                'Todos os diagnósticos concluídos!'
+            );
+            DOM.choicesContainer.appendChild(nextButton);
+        }
+    }
+}
+
+// Função para renderizar diagnóstico (questões dinâmicas)
+async function renderDiagnosis(slide, difficulty = 'standard') {
+    if (!DOM.choicesContainer) return;
+    
+    displayMessage('🤖 Gerando diagnóstico personalizado...', 'system');
+    
+    try {
+        const questionSlide = await generateDynamicQuestion(slide, difficulty);
+        currentQuestionData = questionSlide;
+        
+        if (questionSlide.question) {
+            // Adicionar a questão ao texto
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question-container bg-gray-800/50 border border-gray-600 rounded-lg p-4 mt-4';
+            questionDiv.innerHTML = `<h3 class="text-xl font-bold text-cyan-300 mb-3">Diagnóstico Requerido:</h3><p class="text-gray-300">${questionSlide.question}</p>`;
+            DOM.textContainer.appendChild(questionDiv);
+            
+            // Renderizar alternativas
+            if (questionSlide.answers && questionSlide.answers.length > 0) {
+                questionSlide.answers.forEach((answer, index) => {
+                    const button = createButton(
+                        `${String.fromCharCode(65 + index)}) ${answer.text}`,
+                        () => handleAnswer(answer, questionSlide),
+                        'bg-gray-700 hover:bg-gray-600 text-gray-100 border-gray-900',
+                        false,
+                        'Selecionar resposta'
+                    );
+                    DOM.choicesContainer.appendChild(button);
+                });
+            }
+        }
+        
+        // Botões de dificuldade
+        const difficultyContainer = document.createElement('div');
+        difficultyContainer.className = 'difficulty-controls mt-4 flex gap-2 flex-wrap';
+        
+        const easyButton = createButton(
+            '📉 Versão Mais Fácil',
+            () => renderSlide(slide.id || gameState.currentSlideId, 'easier'),
+            'bg-green-600 hover:bg-green-500 text-white border-green-800 text-sm',
+            false,
+            'Gerar uma versão mais simples'
+        );
+        
+        const hardButton = createButton(
+            '📈 Versão Mais Difícil',
+            () => renderSlide(slide.id || gameState.currentSlideId, 'harder'),
+            'bg-red-600 hover:bg-red-500 text-white border-red-800 text-sm',
+            false,
+            'Gerar uma versão mais complexa'
+        );
+        
+        difficultyContainer.appendChild(easyButton);
+        difficultyContainer.appendChild(hardButton);
+        DOM.choicesContainer.appendChild(difficultyContainer);
+        
+    } catch (error) {
+        console.error('Erro ao renderizar diagnóstico:', error);
+        displayMessage('❌ Erro ao gerar diagnóstico. Tente novamente.', 'error');
+    }
+}
+
+// Função para lidar com respostas
+function handleAnswer(selectedAnswer, questionSlide) {
+    if (!DOM.choicesContainer) return;
+    
+    // Desabilitar todos os botões
+    const buttons = DOM.choicesContainer.querySelectorAll('button');
+    buttons.forEach(btn => btn.disabled = true);
+    
+    // Mostrar feedback
+    const feedbackDiv = document.createElement('div');
+    feedbackDiv.className = 'feedback mt-4 p-4 rounded-lg border-l-4';
+    
+    if (selectedAnswer.correct) {
+        feedbackDiv.classList.add('bg-green-900/50', 'border-green-400', 'text-green-200');
+        feedbackDiv.innerHTML = `✅ <strong>Correto!</strong> ${questionSlide.correctFeedback || 'Diagnóstico preciso!'}`;
+        updateScore(10);
+        
+        // Marcar como completado
+        const slideId = gameState.currentSlideId;
+        const blockId = slideId.match(/c(\d+)_b(\d+)/);
+        if (blockId) {
+            const chapter = blockId[1];
+            const block = `b${blockId[2]}`;
+            if (!gameState.progress[`c${chapter}`]) {
+                gameState.progress[`c${chapter}`] = {};
+            }
+            gameState.progress[`c${chapter}`][block] = true;
+        }
+        
+    } else {
+        feedbackDiv.classList.add('bg-red-900/50', 'border-red-400', 'text-red-200');
+        feedbackDiv.innerHTML = `❌ <strong>Incorreto.</strong> ${questionSlide.incorrectFeedback || 'Revise o diagnóstico.'}`;
+    }
+    
+    DOM.choicesContainer.appendChild(feedbackDiv);
+    
+    // Adicionar botões de navegação
+    setTimeout(() => {
+        if (questionSlide.nextChoices) {
+            questionSlide.nextChoices.forEach(choice => {
+                const button = createButton(
+                    choice.text,
+                    () => renderSlide(choice.nextSlide),
+                    'bg-indigo-700 hover:bg-indigo-600 text-gray-100 border-indigo-900 mt-2',
+                    false,
+                    'Continuar'
+                );
+                DOM.choicesContainer.appendChild(button);
+            });
+        }
+    }, 1000);
+}
 
 // ===================================================================================
 // MODAL FUNCTIONS
@@ -568,38 +735,4 @@ async function showVideoModal(slide) {
             </div>
         `;
     }, 1500);
-}
-// Função para renderizar o hub de seleção
-function renderHub(slide) {
-    slide.innerHTML = `
-        <div class="hub-container">
-            <h2>Escolha uma Área</h2>
-            <div class="hub-options">
-                <button class="hub-option" onclick="startQuiz('cardiologia')">
-                    <i class="fas fa-heartbeat"></i>
-                    <span>Cardiologia</span>
-                </button>
-                <button class="hub-option" onclick="startQuiz('neurologia')">
-                    <i class="fas fa-brain"></i>
-                    <span>Neurologia</span>
-                </button>
-                <button class="hub-option" onclick="startQuiz('pneumologia')">
-                    <i class="fas fa-lungs"></i>
-                    <span>Pneumologia</span>
-                </button>
-                <button class="hub-option" onclick="startQuiz('gastroenterologia')">
-                    <i class="fas fa-stomach"></i>
-                    <span>Gastroenterologia</span>
-                </button>
-            </div>
-        </div>
-    `;
-}
-
-// Função para iniciar o quiz de uma área específica
-function startQuiz(area) {
-    currentArea = area;
-    currentSlide = 0;
-    score = 0;
-    generateQuestions(area);
 }
