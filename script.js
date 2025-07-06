@@ -569,3 +569,37 @@ async function showVideoModal(slide) {
         `;
     }, 1500);
 }
+// Função para renderizar o hub de seleção
+function renderHub(slide) {
+    slide.innerHTML = `
+        <div class="hub-container">
+            <h2>Escolha uma Área</h2>
+            <div class="hub-options">
+                <button class="hub-option" onclick="startQuiz('cardiologia')">
+                    <i class="fas fa-heartbeat"></i>
+                    <span>Cardiologia</span>
+                </button>
+                <button class="hub-option" onclick="startQuiz('neurologia')">
+                    <i class="fas fa-brain"></i>
+                    <span>Neurologia</span>
+                </button>
+                <button class="hub-option" onclick="startQuiz('pneumologia')">
+                    <i class="fas fa-lungs"></i>
+                    <span>Pneumologia</span>
+                </button>
+                <button class="hub-option" onclick="startQuiz('gastroenterologia')">
+                    <i class="fas fa-stomach"></i>
+                    <span>Gastroenterologia</span>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// Função para iniciar o quiz de uma área específica
+function startQuiz(area) {
+    currentArea = area;
+    currentSlide = 0;
+    score = 0;
+    generateQuestions(area);
+}
