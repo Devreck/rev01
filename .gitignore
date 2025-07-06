@@ -6,7 +6,6 @@
 .env.production.local
 
 # API Keys
-config.js
 api-keys.js
 keys.js
 
@@ -47,4 +46,3 @@ npm-debug.log*
 
 # Arquivos de build (se usar futuramente)
 dist/
-build/config.js
