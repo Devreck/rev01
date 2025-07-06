@@ -1,0 +1,31 @@
+{
+  "name": "sos-aurora",
+  "version": "1.0.0",
+  "description": "Uma aventura interativa de física espacial usando IA",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "npx http-server -p 8000 -o",
+    "lint": "echo 'Linting...'",
+    "test": "echo 'Testing...'"
+  },
+  "keywords": [
+    "física",
+    "educação",
+    "jogo",
+    "IA",
+    "ciência",
+    "supabase",
+    "gemini"
+  ],
+  "author": "Seu Nome",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seu-usuario/sos-aurora.git"
+  },
+  "bugs": {
+    "url": "https://github.com/seu-usuario/sos-aurora/issues"
+  },
+  "homepage": "https://github.com/seu-usuario/sos-aurora#readme"
+}

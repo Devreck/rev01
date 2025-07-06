@@ -1,79 +1,140 @@
-Missão: S.O.S. Aurora - Uma Aventura de Física
-1. Visão Geral da Missão
-Missão: S.O.S. Aurora é um jogo educacional interativo projetado como uma aventura de ficção científica. O jogador assume o papel de um(a) Cadete de Engenharia a bordo de uma estação espacial em crise. Para salvar a estação e sua tripulação, o jogador deve resolver uma série de desafios baseados em conceitos de física, abrangendo Termologia, Ondulatória e Óptica.
+# 🚀 Missão: S.O.S. Aurora
 
-Este projeto foi desenvolvido para ser uma ferramenta de aprendizado gamificada, combinando uma narrativa imersiva com a geração dinâmica de problemas através da API do Google Gemini.
+Uma aventura interativa de física espacial que usa Inteligência Artificial para criar desafios dinâmicos. Salve a Estação Aurora resolvendo problemas científicos!
 
-2. Funcionalidades e Protocolos
-O simulador de treinamento inclui os seguintes sistemas:
+## 🎯 Sobre o Projeto
 
-Estrutura Narrativa Modular: A missão é dividida em capítulos, e cada capítulo contém blocos de diagnóstico temáticos (ex: Termometria, Calorimetria).
+Este é um jogo educativo que combina:
+- **Física**: Termologia, Ondas, Óptica e mais
+- **IA**: Google Gemini para questões dinâmicas
+- **Narrativa**: História espacial envolvente
+- **Tecnologia**: HTML5, CSS3, JavaScript ES6+
 
-Geração Dinâmica de Desafios: Utiliza a API do Google Gemini para criar problemas de física conceituais e de cálculo em tempo real, garantindo uma alta rejogabilidade.
+## 🛠️ Tecnologias Utilizadas
 
-Variabilidade de Desafios: A I.A. é instruída a criar diferentes contextos e a aleatorizar os parâmetros das questões.
+- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
+- **Styling**: Tailwind CSS
+- **Matemática**: MathJax para fórmulas
+- **Banco de Dados**: Supabase
+- **IA**: Google Gemini API
+- **Fontes**: Google Fonts (Orbitron, Roboto Slab)
 
-Sistema de Dificuldade Adaptativa: O jogador pode solicitar versões "mais fáceis" ou "mais difíceis" de um desafio, e a I.A. ajustará a complexidade.
+## 🚀 Como Configurar
 
-Sistema de Assistência em Camadas: Inclui opções como "Consultar o diário de bordo" para teoria e "Verificar com o comandante" para dicas estratégicas.
+### 1. Clone o repositório
+```bash
+git clone https://github.com/seu-usuario/sos-aurora.git
+cd sos-aurora
 
-Gamificação: Inclui um sistema de pontuação que recompensa acertos e penaliza erros.
+2. Configure o Supabase
+Crie uma conta no 
 
-Interface Futurista: O design e a tipografia foram escolhidos para criar uma atmosfera imersiva de ficção científica.
+supabase.com
+Crie um novo projeto
+Vá em Settings > API para pegar suas credenciais
+3. Configure a API do Google Gemini
+Acesse o 
 
-3. Arquitetura do Projeto
-O sistema é organizado em três arquivos principais e um backend seguro para facilitar a manutenção e a escalabilidade:
+makersuite.google.com
+Crie uma API Key
+Armazene no Supabase (tabela app_config)
+4. Crie o arquivo de configuração
+Crie um arquivo config.js na raiz do projeto:
 
-index.html: Contém a estrutura principal da interface do usuário (UI), incluindo os contêineres para o jogo e os modais.
+const CONFIG = {
+    SUPABASE_URL: 'https://seu-projeto.supabase.co',
+    SUPABASE_ANON_KEY: 'sua_chave_anonima_aqui',
+    GEMINI_API_KEY_LOCAL: null // Apenas para desenvolvimento
+};
 
-style.css: Responsável por toda a estilização visual do projeto.
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = CONFIG;
+}
 
-script.js: O cérebro da missão. Contém toda a lógica do jogo, o banco de dados da história (storyData) e o gerenciamento de estado. A comunicação com a API do Google Gemini é feita de forma segura através de uma função de proxy no Supabase, sem expor chaves de API no cliente.
+5. Configure o banco de dados
+Execute este SQL no Supabase:
+-- Criar tabela de configurações
+CREATE TABLE app_config (
+    id SERIAL PRIMARY KEY,
+    key_name VARCHAR(50) UNIQUE NOT NULL,
+    key_value TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
 
-supabase/functions/gemini-proxy: Uma função de backend (Edge Function) que atua como um intermediário seguro. Ela recebe a solicitação do script.js, adiciona a chave da API do Google (armazenada de forma segura no Supabase) e repassa a chamada para a API do Gemini.
+-- Inserir a API key do Gemini
+INSERT INTO app_config (key_name, key_value) 
+VALUES ('gemini_api_key', 'sua_api_key_do_gemini_aqui');
 
-4. Como Executar a Missão
-Para que a missão funcione corretamente, é essencial configurar o backend para autenticar as chamadas à IA do Google de forma segura.
+6. Execute o projeto
+Abra o index.html em um servidor local:
+# Usando Python
+python -m http.server 8000
 
-Passo 1: Obtenha sua Chave de API do Google
-Acesse o Google AI Studio.
+# Usando Node.js (se tiver o http-server)
+npx http-server
 
-Faça login com sua conta Google.
+# Usando PHP
+php -S localhost:8000
 
-Clique em "Get API key" e depois em "Create API key in new project".
+🎮 Como Jogar
+Inicie a Missão: Clique em "Assumir o controle"
+Diagnósticos: Resolva problemas de física
+Use as Ferramentas:
+🤖 Comandante: Orientação estratégica
+📚 Diário: Teoria detalhada
+🎯 E.N.E.M: Desafios extras
+📡 Vídeos: Material de apoio
+📁 Estrutura do Projeto
+sos-aurora/
+├── 📄 index.html          # Interface principal
+├── 📄 style.css           # Estilos customizados
+├── 📄 script.js           # Lógica do jogo
+├── 📄 config.js           # Configurações (NÃO commitado)
+├── 📄 .gitignore          # Arquivos ignorados
+├── 📄 README.md           # Este arquivo
+└── 📄 .env.example        # Exemplo de configuração
+🔒 Segurança
+✅ API keys armazenadas no Supabase
+✅ Configurações sensíveis no .gitignore
+✅ Validação de entrada
+✅ Tratamento de erros robusto
+🚨 Solução de Problemas
+Erro: "config.js não encontrado"
+Verifique se criou o arquivo config.js
+Confirme se as credenciais estão corretas
+Erro: "I.A. Central indisponível"
+Verifique sua API key do Gemini
+Confirme a conexão com o Supabase
+Erro: "Falha na geração de questões"
+Verifique sua cota da API Gemini
+Teste a conexão com a internet
+🤝 Contribuindo
+Fork o projeto
+Crie uma branch para sua feature
+Commit suas mudanças
+Push para a branch
+Abra um Pull Request
+📝 Licença
+Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
 
-Copie a chave gerada. Trate esta chave como uma senha e não a compartilhe publicamente.
+🎓 Créditos
+Física: Conteúdo baseado no currículo do Ensino Médio
+IA: Powered by Google Gemini
+Design: Inspirado em ficção científica
+Educação: Focado no aprendizado ativo
+Desenvolvido com ❤️ para educação em física
 
-Passo 2: Configure a Chave de API no Supabase
-A chave da API não deve ser colocada no arquivo script.js. Em vez disso, você deve armazená-la como um "secret" no seu projeto Supabase. A função de proxy já está programada para usá-la a partir de lá.
 
-Faça login no seu painel de controle do Supabase.
+### **3. .env.example** ✅ (Criar)
+```env
+# Configurações do Supabase
+SUPABASE_URL=https://seu-projeto.supabase.co
+SUPABASE_ANON_KEY=sua_chave_anonima_aqui
 
-Navegue até o seu projeto.
+# Para desenvolvimento local (opcional)
+GEMINI_API_KEY=sua_api_key_local_aqui
 
-No menu lateral, vá para Settings (ícone de engrenagem) e depois para Edge Functions.
-
-Na seção Secrets, clique em Add new secret.
-
-No campo Name, digite exatamente GOOGLE_API_KEY.
-
-No campo Value, cole a sua chave de API do Google que você copiou anteriormente.
-
-Clique em Create Secret.
-
-Passo 3: Implantação
-Execução Local: Para testar localmente, você precisará usar a Supabase CLI para executar o projeto e a função de proxy localmente, garantindo que a variável de ambiente (GOOGLE_API_KEY) esteja disponível.
-
-Implantação em Servidor: Faça o upload de todos os arquivos do projeto (index.html, style.css, script.js e a pasta supabase) para o seu provedor de hospedagem (como GitHub Pages, Vercel, etc.). Certifique-se de que suas funções do Supabase também foram implantadas.
-
-5. Como Contribuir e Customizar
-A arquitetura modular foi projetada para facilitar a expansão da missão.
-
-Adicionar Novos Desafios: Para adicionar um novo desafio, crie um novo objeto de slide no storyData com isDiagnosis:!0 e conecte-o usando a propriedade nextSlideInBlock no slide anterior.
-
-Adicionar Novos Blocos ou Capítulos: Siga a estrutura dos objetos isHub:!0 para criar novos painéis de missão e conecte-os através da propriedade nextChapterSlide.
-
-Fim da transmissão.
-
-6. Solução de Problemas
-Se nenhum desafio for gerado e apenas o texto do slide aparecer, verifique a implantação da função `gemini-proxy` no Supabase e confirme que o segredo `GOOGLE_API_KEY` está definido corretamente. Erros de autenticação com a API do Google impedem a criação das questões e o jogo exibirá somente o conteúdo estático.
+# Instruções:
+# 1. Copie este arquivo para config.js
+# 2. Substitua os valores pelos seus dados reais
+# 3. NUNCA commite o config.js no Git
