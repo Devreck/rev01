@@ -423,7 +423,15 @@ async function callGeminiApi(prompt, button) {
         }
         
         geminiOutputContainerEl.innerHTML = `<div class="gemini-response">${text.replace(/\n/g, '<br>')}</div>`;
-        if (window.MathJax) { MathJax.typeset([geminiOutputContainerEl]); }
+        
+        // ✅ CORREÇÃO DO MATHJAX
+        if (window.MathJax && window.MathJax.typeset) {
+            try {
+                window.MathJax.typeset([geminiOutputContainerEl]);
+            } catch (mathError) {
+                console.warn('MathJax typeset error:', mathError);
+            }
+        }
 
     } catch (error) {
         console.error("Gemini API call failed:", error);
@@ -656,9 +664,14 @@ async function renderSlide(slideId, difficulty = 'standard') {
             });
         }
         
+        // ✅ CORREÇÃO DO MATHJAX
         if (window.MathJax && window.MathJax.typeset) {
-        window.MathJax.typeset([textContainerEl, choicesContainerEl]);
-}   
+            try {
+                window.MathJax.typeset([textContainerEl, choicesContainerEl]);
+            } catch (mathError) {
+                console.warn('MathJax typeset error:', mathError);
+            }
+        }
 
         slideContentEl.classList.add('visible');
 
@@ -715,8 +728,13 @@ function handleAnswer(answer, slide) {
     
     textContainerEl.appendChild(feedbackContainer);
     
-    if (window.MathJax) {
-        MathJax.typesetPromise([feedbackContainer]);
+    // ✅ CORREÇÃO DO MATHJAX
+    if (window.MathJax && window.MathJax.typeset) {
+        try {
+            window.MathJax.typeset([feedbackContainer]);
+        } catch (mathError) {
+            console.warn('MathJax typeset error:', mathError);
+        }
     }
 }
 
@@ -793,7 +811,8 @@ async function showVideoModal(slide) {
                             </div>
                         </a>
                     `).join('')}
-                            </div>
+                </div>
+            </div>
             
             ${secondHalf.length > 0 ? `
             <div>
@@ -833,4 +852,3 @@ async function showVideoModal(slide) {
         `;
     }
 }
-            
