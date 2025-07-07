@@ -69,60 +69,70 @@ class AuthSystem {
         e.preventDefault();
         
         const matricula = document.getElementById('matricula').value.trim();
-        const nome = document.getElementById('nome').value.trim();
         const loginBtn = document.getElementById('login-btn');
         const messageEl = document.getElementById('login-message');
 
-        if (!matricula || !nome) {
-            this.showMessage('Por favor, preencha todos os campos.', 'error');
+        if (!matricula) {
+            this.showMessage('Por favor, digite sua matrícula.', 'error');
+            return;
+        }
+
+        // Validar formato da matrícula (opcional)
+        if (!/^\d{4,10}$/.test(matricula)) {
+            this.showMessage('Matrícula deve conter apenas números (4-10 dígitos).', 'error');
             return;
         }
 
         loginBtn.disabled = true;
-        loginBtn.innerHTML = '<div class="loader"></div> Verificando...';
+        loginBtn.innerHTML = '<div class="loader"></div> Verificando matrícula...';
         messageEl.innerHTML = '';
 
         try {
-            // Verificar se o estudante existe
-            let student = await this.getStudentByMatricula(matricula);
+            // Buscar estudante pela matrícula
+            const student = await this.getStudentByMatricula(matricula);
             
             if (student) {
-                // Estudante existe, verificar nome
-                if (student.nome.toLowerCase() !== nome.toLowerCase()) {
-                    this.showMessage('Nome não confere com a matrícula informada.', 'error');
-                    return;
-                }
-                
-                // Atualizar último login
+                // Estudante encontrado - fazer login
                 await this.updateLastLogin(student.id);
                 student.last_login = new Date().toISOString();
+                
+                this.currentStudent = student;
+                this.saveSession();
+                
+                // Mostrar boas-vindas personalizada
+                this.showMessage(`Bem-vindo de volta, ${student.nome}!`, 'success');
+                this.showStudentInfo(student);
+                
+                setTimeout(() => {
+                    this.hideLogin();
+                    this.updateUI();
+                    showSystemMessage(`🚀 Cadete ${student.nome} reportando para o serviço!`, 'success');
+                }, 2500);
+                
             } else {
-                // Estudante não existe, criar novo
-                student = await this.createStudent(matricula, nome);
-                if (!student) {
-                    this.showMessage('Erro ao criar registro do estudante. Tente novamente.', 'error');
-                    return;
-                }
+                // Estudante não encontrado
+                this.showMessage('Matrícula não encontrada no sistema da Academia Espacial.', 'error');
+                this.showRegistrationPrompt(matricula);
             }
-
-            // Login bem-sucedido
-            this.currentStudent = student;
-            this.saveSession();
-            this.showMessage('Login realizado com sucesso!', 'success');
-            this.showStudentInfo(student);
-            
-            setTimeout(() => {
-                this.hideLogin();
-                this.updateUI();
-            }, 2000);
 
         } catch (error) {
             console.error('Erro no login:', error);
-            this.showMessage('Erro de conexão. Verifique sua internet e tente novamente.', 'error');
+            this.showMessage('Erro de conexão com a base central. Verifique sua internet.', 'error');
         } finally {
             loginBtn.disabled = false;
-            loginBtn.innerHTML = 'Iniciar Missão';
+            loginBtn.innerHTML = 'Acessar Sistema';
         }
+    }
+
+    showRegistrationPrompt(matricula) {
+        const messageEl = document.getElementById('login-message');
+        messageEl.innerHTML = `
+            <div class="login-error">
+                <p><strong>Matrícula não encontrada!</strong></p>
+                <p>Esta matrícula não está registrada no sistema.</p>
+                <p>Entre em contato com o administrador para registrar a matrícula <strong>${matricula}</strong>.</p>
+            </div>
+        `;
     }
 
     loginAsGuest() {
@@ -163,29 +173,6 @@ class AuthSystem {
             return data;
         } catch (error) {
             console.error('Erro ao buscar estudante:', error);
-            return null;
-        }
-    }
-
-    async createStudent(matricula, nome) {
-        try {
-            const { data, error } = await supabase
-                .from('students')
-                .insert([
-                    {
-                        matricula: matricula,
-                        nome: nome,
-                        created_at: new Date().toISOString(),
-                        last_login: new Date().toISOString()
-                    }
-                ])
-                .select()
-                .single();
-
-            if (error) throw error;
-            return data;
-        } catch (error) {
-            console.error('Erro ao criar estudante:', error);
             return null;
         }
     }
@@ -294,13 +281,16 @@ class AuthSystem {
 
     showStudentInfo(student) {
         const infoEl = document.getElementById('student-info');
+        const lastLogin = student.last_login ? new Date(student.last_login).toLocaleString('pt-BR') : 'Primeiro acesso';
+        
         infoEl.innerHTML = `
-            <h4>Cadete Identificado</h4>
+            <h4>🎯 Cadete Identificado</h4>
             <p><strong>Nome:</strong> ${student.nome}</p>
             <p><strong>Matrícula:</strong> ${student.matricula}</p>
             <p><strong>Turma:</strong> ${student.turma || 'Não informada'}</p>
-            <p><strong>Pontuação Total:</strong> ${student.total_score || 0}</p>
-            <p><strong>Último Acesso:</strong> ${student.last_login ? new Date(student.last_login).toLocaleString('pt-BR') : 'Primeiro acesso'}</p>
+            <p><strong>Pontuação Total:</strong> ${student.total_score || 0} pontos</p>
+            <p><strong>Último Acesso:</strong> ${lastLogin}</p>
+            <p class="text-cyan-300 mt-2">🚀 <strong>Iniciando sistemas da Estação Aurora...</strong></p>
         `;
         infoEl.style.display = 'block';
     }
