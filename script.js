@@ -656,9 +656,9 @@ async function renderSlide(slideId, difficulty = 'standard') {
             });
         }
         
-        if (window.MathJax) {
-             MathJax.typesetPromise([textContainerEl, choicesContainerEl]);
-        }
+        if (window.MathJax && window.MathJax.typeset) {
+        window.MathJax.typeset([textContainerEl, choicesContainerEl]);
+}   
 
         slideContentEl.classList.add('visible');
 
