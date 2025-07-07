@@ -330,6 +330,39 @@ body {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}/* Melhorias para o modal de vídeos */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    /* Fallback para navegadores que não suportam -webkit-line-clamp */
+    line-clamp: 2;
+    /* Fallback adicional usando max-height */
+    max-height: 2.5em; /* Aproximadamente 2 linhas */
+    line-height: 1.25em;
+}
+
+/* Suporte adicional para navegadores modernos */
+@supports (line-clamp: 2) {
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        line-clamp: 2;
+        overflow: hidden;
+    }
+}
+
+/* Fallback para navegadores muito antigos */
+@supports not (line-clamp: 2) and not (-webkit-line-clamp: 2) {
+    .line-clamp-2 {
+        display: block;
+        max-height: 2.5em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 }
 
 .aspect-video {
@@ -952,4 +985,45 @@ body {
     .modal {
         display: none !important;
     }
+
+}
+/* Cores específicas para botões ENEM e Vídeos */
+.bg-yellow-500 {
+    background-color: #eab308;
+}
+
+.bg-yellow-400 {
+    background-color: #facc15;
+}
+
+.hover\:bg-yellow-400:hover {
+    background-color: #facc15;
+}
+
+.bg-red-600 {
+    background-color: #dc2626;
+}
+
+.bg-red-500 {
+    background-color: #ef4444;
+}
+
+.hover\:bg-red-500:hover {
+    background-color: #ef4444;
+}
+
+.border-yellow-700 {
+    border-color: #a16207;
+}
+
+.border-red-800 {
+    border-color: #991b1b;
+}
+
+.text-black {
+    color: #000000;
+}
+
+.text-white {
+    color: #ffffff;
 }
