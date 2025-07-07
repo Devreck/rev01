@@ -5,7 +5,6 @@
 class AuthSystem {
     constructor() {
         this.currentStudent = null;
-        this.isGuest = false;
         this.loginOverlay = null;
         this.initialized = false;
     }
@@ -21,15 +20,14 @@ class AuthSystem {
         if (savedSession) {
             try {
                 const session = JSON.parse(savedSession);
-                if (session.isGuest) {
-                    this.loginAsGuest();
-                } else if (session.student) {
+                if (session.student) {
                     // Verificar se o estudante ainda existe no banco
                     const student = await this.getStudentByMatricula(session.student.matricula);
                     if (student) {
                         this.currentStudent = student;
                         this.hideLogin();
                         this.updateUI();
+                        showSystemMessage(`🚀 Bem-vindo de volta, ${student.nome}!`, 'success');
                     } else {
                         this.clearSession();
                     }
@@ -40,11 +38,9 @@ class AuthSystem {
             }
         }
         
-        // Mostrar login se necessário
-        if (CONFIG.REQUIRE_LOGIN && !this.currentStudent && !this.isGuest) {
+        // Mostrar login se não estiver logado
+        if (!this.currentStudent) {
             this.showLogin();
-        } else if (!CONFIG.REQUIRE_LOGIN) {
-            this.hideLogin();
         }
         
         this.initialized = true;
@@ -52,17 +48,10 @@ class AuthSystem {
 
     setupEventListeners() {
         const loginForm = document.getElementById('login-form');
-        const guestBtn = document.getElementById('guest-btn');
         const logoutBtn = document.getElementById('logout-btn');
 
         loginForm.addEventListener('submit', (e) => this.handleLogin(e));
-        guestBtn.addEventListener('click', () => this.loginAsGuest());
         logoutBtn.addEventListener('click', () => this.logout());
-
-        // Mostrar/ocultar botão de visitante
-        if (!CONFIG.ALLOW_GUEST_MODE) {
-            guestBtn.style.display = 'none';
-        }
     }
 
     async handleLogin(e) {
@@ -107,6 +96,11 @@ class AuthSystem {
                     this.hideLogin();
                     this.updateUI();
                     showSystemMessage(`🚀 Cadete ${student.nome} reportando para o serviço!`, 'success');
+                    
+                    // ✅ INICIAR O JOGO APÓS LOGIN
+                    if (typeof renderSlide === 'function') {
+                        renderSlide('1');
+                    }
                 }, 2500);
                 
             } else {
@@ -135,18 +129,8 @@ class AuthSystem {
         `;
     }
 
-    loginAsGuest() {
-        this.isGuest = true;
-        this.currentStudent = null;
-        this.saveSession();
-        this.hideLogin();
-        this.updateUI();
-        showSystemMessage('🎮 Modo visitante ativado. Progresso não será salvo.', 'info');
-    }
-
     logout() {
         this.currentStudent = null;
-        this.isGuest = false;
         this.clearSession();
         this.showLogin();
         this.updateUI();
@@ -191,7 +175,7 @@ class AuthSystem {
     }
 
     async saveProgress(progress, score) {
-        if (this.isGuest || !this.currentStudent) return;
+        if (!this.currentStudent) return;
 
         try {
             const { error } = await supabase
@@ -215,7 +199,7 @@ class AuthSystem {
     }
 
     async loadProgress() {
-        if (this.isGuest || !this.currentStudent) return null;
+        if (!this.currentStudent) return null;
 
         try {
             const { data, error } = await supabase
@@ -234,7 +218,6 @@ class AuthSystem {
 
     saveSession() {
         const session = {
-            isGuest: this.isGuest,
             student: this.currentStudent,
             timestamp: Date.now()
         };
@@ -261,10 +244,7 @@ class AuthSystem {
         const studentDisplay = document.getElementById('student-display');
         const logoutBtn = document.getElementById('logout-btn');
 
-        if (this.isGuest) {
-            studentDisplay.textContent = 'VISITANTE';
-            logoutBtn.style.display = 'none';
-        } else if (this.currentStudent) {
+        if (this.currentStudent) {
             studentDisplay.textContent = `${this.currentStudent.nome.toUpperCase()} (${this.currentStudent.matricula})`;
             logoutBtn.style.display = 'inline-block';
         } else {
@@ -300,11 +280,7 @@ class AuthSystem {
     }
 
     isLoggedIn() {
-        return this.currentStudent !== null || this.isGuest;
-    }
-
-    isGuestMode() {
-        return this.isGuest;
+        return this.currentStudent !== null;
     }
 }
 

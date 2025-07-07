@@ -275,13 +275,21 @@ async function initializeApp() {
             
             // SEMPRE tentar carregar a API key real (nunca usar mock)
             await loadApiKey();
+            
+            // ✅ INICIALIZAR SISTEMA DE AUTENTICAÇÃO
+            await authSystem.init();
+            
         } else {
             throw new Error('CONFIG não encontrado');
         }
         
         setupEventListeners();
-        showSystemMessage('✅ Sistemas online! Missão iniciada.', 'success');
-        renderSlide(currentSlideId);
+        showSystemMessage('✅ Sistemas online!', 'success');
+        
+        // ✅ SÓ RENDERIZAR SE ESTIVER LOGADO
+        if (authSystem.isLoggedIn()) {
+            renderSlide(currentSlideId);
+        }
         
     } catch (error) {
         console.error('Erro na inicialização:', error);
