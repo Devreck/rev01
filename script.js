@@ -216,6 +216,177 @@ const storyData = {
 };
 
 // ===================================================================================
+// BUSCA DE VÍDEOS DO YOUTUBE
+// ===================================================================================
+
+async function searchYouTubeVideos(query) {
+    const API_KEY = 'AIzaSyBVkxYFxiDWqrTVrwl5xMuZ5qZZJuNC-nA';
+    const videos = [];
+    
+    try {
+        // Canais prioritários para física (usernames para IDs)
+        const priorityChannels = [
+            'UCrWWMZ29MTjDCqeGBWNm_JQ', // @CienciaTodoDia
+            'UCJ-yYJpHJlx-IlWLU7gKCzQ', // @Fisiquei
+            'UCWQalZkqNLD9JbU7eyWa9PA', // @profdouglasgomes
+            'UCyEbNSCBGasLNKOqRFYGo6A', // @Fisica2.0
+            'UCrWWMZ29MTjDCqeGBWNm_JQ', // @professorboaro
+            'UCJ-yYJpHJlx-IlWLU7gKCzQ', // @mesalva
+            'UCWQalZkqNLD9JbU7eyWa9PA', // @seimaisfísica
+            'UCyEbNSCBGasLNKOqRFYGo6A'  // @stoodi
+        ];
+        
+        // Primeiro: buscar nos canais prioritários
+        for (let i = 0; i < priorityChannels.length && videos.length < 6; i++) {
+            const channelId = priorityChannels[i];
+            const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&q=${encodeURIComponent(query)}&type=video&maxResults=2&order=relevance&videoDuration=medium&key=${API_KEY}`;
+            
+            try {
+                const response = await fetch(searchUrl);
+                const data = await response.json();
+                
+                if (data.items && data.items.length > 0) {
+                    for (const video of data.items) {
+                        if (videos.length >= 6) break;
+                        
+                        // Verificar duração do vídeo (máximo 15 minutos)
+                        const videoDetailsUrl = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${video.id.videoId}&key=${API_KEY}`;
+                        
+                        try {
+                            const detailsResponse = await fetch(videoDetailsUrl);
+                                                        const detailsData = await detailsResponse.json();
+                            
+                            if (detailsData.items && detailsData.items.length > 0) {
+                                const videoDetails = detailsData.items[0];
+                                const duration = videoDetails.contentDetails.duration;
+                                const stats = videoDetails.statistics;
+                                
+                                // Converter duração ISO 8601 para minutos
+                                const durationMinutes = parseDuration(duration);
+                                
+                                // Filtrar: máximo 15 minutos e bem avaliado
+                                if (durationMinutes <= 15 && parseInt(stats.likeCount || 0) > 10) {
+                                    videos.push({
+                                        title: video.snippet.title,
+                                        thumbnail: video.snippet.thumbnails.medium.url,
+                                        videoId: video.id.videoId,
+                                        channelTitle: video.snippet.channelTitle,
+                                        url: `https://www.youtube.com/watch?v=${video.id.videoId}`,
+                                        duration: formatDuration(durationMinutes),
+                                        likes: stats.likeCount || 0,
+                                        views: stats.viewCount || 0
+                                    });
+                                }
+                            }
+                        } catch (detailsError) {
+                            console.error('Erro ao buscar detalhes do vídeo:', detailsError);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error(`Erro ao buscar no canal ${channelId}:`, error);
+            }
+        }
+        
+        // Se não encontrou vídeos suficientes, fazer busca geral com filtros
+        if (videos.length < 6) {
+            const remainingSlots = 6 - videos.length;
+            const generalSearchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query + ' física educação')}&type=video&maxResults=${remainingSlots * 2}&order=rating&videoDuration=medium&key=${API_KEY}`;
+            
+            try {
+                const response = await fetch(generalSearchUrl);
+                const data = await response.json();
+                
+                if (data.items) {
+                    for (const video of data.items) {
+                        if (videos.length >= 6) break;
+                        
+                        // Verificar se já não temos este vídeo
+                        if (videos.some(v => v.videoId === video.id.videoId)) continue;
+                        
+                        // Verificar duração e avaliação
+                        const videoDetailsUrl = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${video.id.videoId}&key=${API_KEY}`;
+                        
+                        try {
+                            const detailsResponse = await fetch(videoDetailsUrl);
+                            const detailsData = await detailsResponse.json();
+                            
+                            if (detailsData.items && detailsData.items.length > 0) {
+                                const videoDetails = detailsData.items[0];
+                                const duration = videoDetails.contentDetails.duration;
+                                const stats = videoDetails.statistics;
+                                
+                                const durationMinutes = parseDuration(duration);
+                                
+                                // Filtrar: máximo 15 minutos e bem avaliado
+                                if (durationMinutes <= 15 && parseInt(stats.likeCount || 0) > 5) {
+                                    videos.push({
+                                        title: video.snippet.title,
+                                        thumbnail: video.snippet.thumbnails.medium.url,
+                                        videoId: video.id.videoId,
+                                        channelTitle: video.snippet.channelTitle,
+                                        url: `https://www.youtube.com/watch?v=${video.id.videoId}`,
+                                        duration: formatDuration(durationMinutes),
+                                        likes: stats.likeCount || 0,
+                                        views: stats.viewCount || 0
+                                    });
+                                }
+                            }
+                        } catch (detailsError) {
+                            console.error('Erro ao buscar detalhes do vídeo:', detailsError);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Erro na busca geral:', error);
+            }
+        }
+        
+        // Ordenar por likes (mais bem avaliados primeiro)
+        videos.sort((a, b) => parseInt(b.likes) - parseInt(a.likes));
+        
+    } catch (error) {
+        console.error('Erro na busca de vídeos:', error);
+    }
+    
+    return videos.slice(0, 6); // Garantir máximo de 6 vídeos
+}
+
+// Função auxiliar para converter duração ISO 8601 para minutos
+function parseDuration(isoDuration) {
+    const match = isoDuration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    if (!match) return 0;
+    
+    const hours = parseInt(match[1] || 0);
+    const minutes = parseInt(match[2] || 0);
+    const seconds = parseInt(match[3] || 0);
+    
+    return hours * 60 + minutes + (seconds > 30 ? 1 : 0); // Arredondar segundos
+}
+
+// Função auxiliar para formatar duração
+function formatDuration(minutes) {
+    if (minutes < 60) {
+        return `${minutes}min`;
+    } else {
+        const hours = Math.floor(minutes / 60);
+        const remainingMinutes = minutes % 60;
+        return `${hours}h${remainingMinutes > 0 ? remainingMinutes + 'min' : ''}`;
+    }
+}
+
+// Função auxiliar para formatar números
+function formatNumber(num) {
+    const number = parseInt(num);
+    if (number >= 1000000) {
+        return (number / 1000000).toFixed(1) + 'M';
+    } else if (number >= 1000) {
+        return (number / 1000).toFixed(1) + 'K';
+    }
+    return number.toString();
+}
+
+// ===================================================================================
 // INICIALIZAÇÃO
 // ===================================================================================
 
@@ -412,7 +583,7 @@ async function callGeminiApi(prompt, button) {
         if (window.MathJax) { MathJax.typeset([geminiOutputContainerEl]); }
 
     } catch (error) {
-        console.error("Gemini API call failed:", error);       
+        console.error("Gemini API call failed:", error);
         geminiOutputContainerEl.innerHTML = `<div class="gemini-response text-red-400">Falha crítica na conexão com a I.A. Central: ${error.message}</div>`;
     } finally {
          button.disabled = false;
@@ -725,170 +896,6 @@ function showEnemConfirmation(slideId) {
 }
 
 async function showVideoModal(slide) {
-    const topic = slide.diaryPrompt ? slide.diaryPrompt.split(".")[0] : "Física";
-    videoGridEl.innerHTML = '<div class="flex justify-center items-center"><div class="loader"></div><span>Buscando vídeos de treinamento...</span></div>';
-    videoModalEl.classList.remove('hidden');
-
-    // ===================================================================================
-// BUSCA DE VÍDEOS DO YOUTUBE
-// ===================================================================================
-
-async function searchYouTubeVideos(query, channelIds = []) {
-    const API_KEY = 'AIzaSyBVkxYFxiDWqrTVrwl5xMuZ5qZZJuNC-nA'; // Sua API key do Google
-    const videos = [];
-    
-    try {
-        // Canais prioritários para física (IDs reais dos canais)
-        const priorityChannels = [
-            'UCrWWMZ29MTjDCqeGBWNm_JQ', // @CienciaTodoDia
-            'UCJ-yYJpHJlx-IlWLU7gKCzQ', // @Fisiquei
-            'UCWQalZkqNLD9JbU7eyWa9PA', // @profdouglasgomes
-            'UCyEbNSCBGasLNKOqRFYGo6A', // @Fisica2.0
-            'UCrWWMZ29MTjDCqeGBWNm_JQ', // @professorboaro
-            'UCJ-yYJpHJlx-IlWLU7gKCzQ', // @mesalva
-            'UCWQalZkqNLD9JbU7eyWa9PA', // @seimaisfísica
-            'UCyEbNSCBGasLNKOqRFYGo6A'  // @stoodi
-        ];
-        
-        // Primeiro: buscar nos canais prioritários
-        for (let i = 0; i < priorityChannels.length && videos.length < 6; i++) {
-            const channelId = priorityChannels[i];
-            const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&q=${encodeURIComponent(query)}&type=video&maxResults=2&order=relevance&videoDuration=medium&key=${API_KEY}`;
-            
-            try {
-                const response = await fetch(searchUrl);
-                const data = await response.json();
-                
-                if (data.items && data.items.length > 0) {
-                    for (const video of data.items) {
-                        if (videos.length >= 6) break;
-                        
-                        // Verificar duração do vídeo (máximo 15 minutos)
-                        const videoDetailsUrl = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${video.id.videoId}&key=${API_KEY}`;
-                        
-                        try {
-                            const detailsResponse = await fetch(videoDetailsUrl);
-                            const detailsData = await detailsResponse.json();
-                            
-                            if (detailsData.items && detailsData.items.length > 0) {
-                                const videoDetails = detailsData.items[0];
-                                const duration = videoDetails.contentDetails.duration;
-                                const stats = videoDetails.statistics;
-                                
-                                // Converter duração ISO 8601 para minutos
-                                const durationMinutes = parseDuration(duration);
-                                
-                                // Filtrar: máximo 15 minutos e bem avaliado
-                                if (durationMinutes <= 15 && parseInt(stats.likeCount || 0) > 10) {
-                                    videos.push({
-                                        title: video.snippet.title,
-                                        thumbnail: video.snippet.thumbnails.medium.url,
-                                        videoId: video.id.videoId,
-                                        channelTitle: video.snippet.channelTitle,
-                                        url: `https://www.youtube.com/watch?v=${video.id.videoId}`,
-                                        duration: formatDuration(durationMinutes),
-                                        likes: stats.likeCount || 0,
-                                        views: stats.viewCount || 0
-                                    });
-                                }
-                            }
-                        } catch (detailsError) {
-                            console.error('Erro ao buscar detalhes do vídeo:', detailsError);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error(`Erro ao buscar no canal ${channelId}:`, error);
-            }
-        }
-        
-        // Se não encontrou vídeos suficientes, fazer busca geral com filtros
-        if (videos.length < 6) {
-            const remainingSlots = 6 - videos.length;
-            const generalSearchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query + ' física educação')}&type=video&maxResults=${remainingSlots * 2}&order=rating&videoDuration=medium&key=${API_KEY}`;
-            
-            try {
-                const response = await fetch(generalSearchUrl);
-                const data = await response.json();
-                
-                if (data.items) {
-                    for (const video of data.items) {
-                        if (videos.length >= 6) break;
-                        
-                        // Verificar se já não temos este vídeo
-                        if (videos.some(v => v.videoId === video.id.videoId)) continue;
-                        
-                        // Verificar duração e avaliação
-                        const videoDetailsUrl = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${video.id.videoId}&key=${API_KEY}`;
-                        
-                        try {
-                            const detailsResponse = await fetch(videoDetailsUrl);
-                            const detailsData = await detailsResponse.json();
-                            
-                            if (detailsData.items && detailsData.items.length > 0) {
-                                const videoDetails = detailsData.items[0];
-                                const duration = videoDetails.contentDetails.duration;
-                                const stats = videoDetails.statistics;
-                                
-                                const durationMinutes = parseDuration(duration);
-                                
-                                // Filtrar: máximo 15 minutos e bem avaliado
-                                if (durationMinutes <= 15 && parseInt(stats.likeCount || 0) > 5) {
-                                    videos.push({
-                                        title: video.snippet.title,
-                                        thumbnail: video.snippet.thumbnails.medium.url,
-                                        videoId: video.id.videoId,
-                                        channelTitle: video.snippet.channelTitle,
-                                        url: `https://www.youtube.com/watch?v=${video.id.videoId}`,
-                                        duration: formatDuration(durationMinutes),
-                                        likes: stats.likeCount || 0,
-                                        views: stats.viewCount || 0
-                                    });
-                                }
-                            }
-                        } catch (detailsError) {
-                            console.error('Erro ao buscar detalhes do vídeo:', detailsError);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Erro na busca geral:', error);
-            }
-        }
-        
-        // Ordenar por likes (mais bem avaliados primeiro)
-        videos.sort((a, b) => parseInt(b.likes) - parseInt(a.likes));
-        
-    } catch (error) {
-        console.error('Erro na busca de vídeos:', error);
-    }
-    
-    return videos.slice(0, 6); // Garantir máximo de 6 vídeos
-}
-
-// Função auxiliar para converter duração ISO 8601 para minutos
-function parseDuration(isoDuration) {
-    const match = isoDuration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-    if (!match) return 0;
-    
-    const hours = parseInt(match[1] || 0);
-    const minutes = parseInt(match[2] || 0);
-    const seconds = parseInt(match[3] || 0);
-    
-    return hours * 60 + minutes + (seconds > 30 ? 1 : 0); // Arredondar segundos
-}
-
-// Função auxiliar para formatar duração
-function formatDuration(minutes) {
-    if (minutes < 60) {
-        return `${minutes}min`;
-    } else {
-        const hours = Math.floor(minutes / 60);
-        const remainingMinutes = minutes % 60;
-        return `${hours}h${remainingMinutes > 0 ? remainingMinutes + 'min' : ''}`;
-    }
-}
-async function showVideoModal(slide) {
     // Determinar o tópico de busca baseado no slide
     let searchTopic = 'física';
     
@@ -985,16 +992,4 @@ async function showVideoModal(slide) {
             </div>
         `;
     }
-}
-
-// Função auxiliar para formatar números
-function formatNumber(num) {
-    const number = parseInt(num);
-    if (number >= 1000000) {
-        return (number / 1000000).toFixed(1) + 'M';
-    } else if (number >= 1000) {
-        return (number / 1000).toFixed(1) + 'K';
-    }
-    return number.toString();
-}
 }

@@ -3,190 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Missão: S.O.S. Aurora - Uma Aventura de Física</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Slab:wght@300;400;700&display=swap" rel="stylesheet">
-    <!-- MathJax para renderização de equações matemáticas -->
+    <title>S.O.S. Estação Aurora - Missão de Resgate</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>
-        MathJax = {
-          tex: {
-            inlineMath: [['$', '$'], ['\(', '\)']],
-            displayMath: [['$$', '$$'], ['\[', '\]']]
-          },
-          svg: {
-            fontCache: 'global'
-          }
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\(', '\)']],
+                displayMath: [['$$', '$$'], ['\[', '\]']]
+            }
         };
     </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <style>
-        body {
-            font-family: 'Roboto Slab', serif;
-            background-color: #0c0a1e;
-            background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
-        }
-        #game-container {
-            font-family: 'Roboto Slab', serif;
-            border-width: 2px;
-            border-style: solid;
-            border-image: linear-gradient(to bottom right, #8A2BE2, #4169E1, #00BFFF) 1;
-            box-shadow: 0 0 25px rgba(65, 105, 225, 0.4);
-        }
-        h2, .font-orbitron {
-            font-family: 'Orbitron', sans-serif;
-            text-shadow: 0 0 5px #00BFFF;
-        }
-        .action-button, .gemini-button {
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-            border-bottom-width: 4px;
-        }
-        .action-button:hover, .gemini-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
-        }
-        .action-button:disabled {
-            transform: none;
-            box-shadow: none;
-            cursor: not-allowed;
-        }
-        .slide-content {
-            opacity: 0;
-            transition: opacity 0.7s ease-in-out;
-        }
-        .slide-content.visible {
-            opacity: 1;
-        }
-        .feedback {
-            border-left: 4px solid;
-            padding: 1rem;
-            margin-top: 1rem;
-            border-radius: 0 8px 8px 0;
-        }
-        .feedback-correct {
-            border-color: #34d399;
-            background-color: rgba(16, 185, 129, 0.1);
-        }
-        .feedback-incorrect {
-             border-color: #f87171;
-            background-color: rgba(248, 113, 113, 0.1);
-        }
-        .gemini-response {
-            border-top: 2px dashed #4169E1;
-            background-color: rgba(65, 105, 225, 0.05);
-            padding: 1rem;
-            margin-top: 1.5rem;
-            border-radius: 8px;
-        }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #4169E1;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        mjx-container {
-            color: #e5e7eb;
-        }
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background-color: rgba(12, 10, 30, 0.8);
-            backdrop-filter: blur(4px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 50;
-        }
-        .modal-content {
-            background-color: #1a1a2e;
-            border: 1px solid #4169E1;
-            box-shadow: 0 0 25px rgba(65, 105, 225, 0.4);
-        }
-        .system-message {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 100;
-            max-width: 300px;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 14px;
-            animation: slideIn 0.3s ease-out;
-        }
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        .system-message.success {
-            background-color: rgba(16, 185, 129, 0.2);
-            border-left: 4px solid #10b981;
-            color: #10b981;
-        }
-        .system-message.error {
-            background-color: rgba(248, 113, 113, 0.2);
-            border-left: 4px solid #f87171;
-            color: #f87171;
-        }
-        .system-message.info {
-            background-color: rgba(59, 130, 246, 0.2);
-            border-left: 4px solid #3b82f6;
-            color: #3b82f6;
-        }
-    </style>
 </head>
-<body class="bg-[#0c0a1e] text-gray-200 flex items-center justify-center min-h-screen p-4">
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="title">S.O.S. ESTAÇÃO AURORA</h1>
+                <div class="status-bar">
+                    <span id="score-display">PONTUAÇÃO: 0</span>
+                    <button id="reset-btn" class="reset-button">REINICIAR MISSÃO</button>
+                </div>
+            </div>
+        </header>
 
-    <div id="game-container" class="w-full max-w-4xl bg-[#1a1a2e] rounded-lg p-6 md:p-8 relative">
-        
-        <div id="score-display" class="absolute top-4 left-4 font-orbitron text-lg text-cyan-300">PONTUAÇÃO: 0</div>
-        
-        <div class="absolute top-4 right-4">
-            <button id="reset-btn" class="action-button bg-gray-700 hover:bg-gray-600 text-white border-gray-900 font-bold py-2 px-4 rounded-md">Reiniciar Missão</button>
-        </div>
+        <!-- Main Content -->
+        <main class="main-content">
+            <div id="slide-content" class="slide-content">
+                <div id="slide-image-container" class="slide-image"></div>
+                <div id="slide-text-container" class="slide-text"></div>
+                <div id="slide-choices-container" class="slide-choices"></div>
+            </div>
+            
+            <!-- Gemini Output Container -->
+            <div id="gemini-output-container" class="gemini-output"></div>
+        </main>
+    </div>
 
-        <div id="slide-content" class="slide-content mt-12">
-            <div id="slide-image-container" class="mb-4"></div>
-            <div id="slide-text-container"></div>
-            <div id="slide-choices-container" class="mt-6 space-y-3"></div>
-            <div id="gemini-output-container" class="mt-4"></div>
+    <!-- Modal E.N.E.M -->
+    <div id="enem-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 class="text-2xl font-bold text-cyan-300 mb-4 font-orbitron text-center">
+                Enciclopédia de Navegação e<br>Engenharia da Missão
+            </h3>
+            <p class="text-gray-300 mb-6 text-center">
+                Este protocolo adapta a questão atual para o formato E.N.E.M, 
+                incluindo análise de alternativas e estratégias de resolução.
+            </p>
+            <div class="flex justify-center space-x-4">
+                <button id="enem-confirm-btn" class="action-button bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-2 px-4 rounded border-yellow-700">
+                    Ativar Protocolo
+                </button>
+                <button id="enem-cancel-btn" class="action-button bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded border-gray-800">
+                    Cancelar
+                </button>
+            </div>
         </div>
     </div>
 
-<!-- Modal E.N.E.M -->
-<div id="enem-modal" class="modal hidden">
-    <div class="modal-content">
-        <h3 class="text-2xl font-bold text-cyan-300 mb-4 font-orbitron text-center">
-            Enciclopédia de Navegação e<br>Engenharia da Missão
-        </h3>
-        <p class="text-gray-300 mb-6 text-center">
-            Atenção: Acessar a E.N.E.M. projeta o terminal holográfico da Enciclopédia de Navegação e Engenharia da Missão, liberando desafios de treinamento interplanetário específicos dos sistemas que você está analisando, deseja continuar?
-        </p>
-        <div class="flex justify-center space-x-4">
-            <button id="enem-confirm-btn" class="action-button bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-2 px-4 rounded border-yellow-700">
-                Ativar Protocolo
-            </button>
-            <button id="enem-cancel-btn" class="action-button bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded border-gray-800">
-                Cancelar
-            </button>
-        </div>
-    </div>
-</div>
-
-   
-    <div id="video-modal" class="modal-overlay hidden">
-        <div class="modal-content p-6 rounded-lg max-w-4xl w-full">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-orbitron text-2xl text-red-400">Banco de Imagens Primitivas</h3>
-                <button id="video-close-btn" class="text-gray-400 hover:text-white">&times;</button>
+    <!-- Modal de Vídeos -->
+    <div id="video-modal" class="modal hidden">
+        <div class="modal-content max-w-6xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-cyan-300 font-orbitron">Banco de Imagens Primitivas</h3>
+                <button id="video-close-btn" class="text-gray-400 hover:text-white text-2xl">&times;</button>
             </div>
             <div id="video-grid" class="space-y-6"></div>
         </div>
