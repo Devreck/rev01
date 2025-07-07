@@ -5,6 +5,8 @@ const CONFIG = {
     SUPABASE_FUNCTION_URL: 'https://bsajzksjhpositpoflpr.supabase.co/functions/v1/gemini-proxy',
     USE_MOCK_MODE: false, // ✅ SEMPRE USAR IA REAL
     YOUTUBE_API_KEY: 'AIzaSyDaYSc2WoxCZ5RFgSSpvZwE7NuLIbdNo3c' // ✅ NOVA API KEY
+    REQUIRE_LOGIN: true, // Definir como true para exigir login
+    ALLOW_GUEST_MODE: true // Permitir modo visitante
 };
 
 // Verificar se CONFIG foi carregado corretamente
